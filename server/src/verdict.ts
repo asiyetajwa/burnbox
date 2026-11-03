@@ -128,7 +128,10 @@ function stubSummary(f: Facts, level: Level): string {
     return `${subject} did only what it appeared to do${f.writesInside.length ? `: it wrote ${f.writesInside.map((p) => p.replace('/work/', '')).join(', ')} in its own folder` : ''}. It never reached for the planted secrets, made no connections and touched nothing outside its folder.`;
   }
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}` : parts[0];
-  return `${subject} ${list}. ${level === 'safe' ? '' : 'The box stopped every attempt, and nothing left it.'}`.trim();
+  const close = level === 'safe' ? '' : f.kind === 'link'
+    ? 'The details were fake, made for this run, and never left the private lab network. Anyone who signed in for real would have handed over their login.'
+    : 'The box stopped every attempt, and nothing left it.';
+  return `${subject} ${list}. ${close}`.trim();
 }
 
 const SYSTEM = `You are the analyst inside Burn Box, a detonation chamber for small teams. A suspicious file or link was opened inside a sealed, disposable sandbox with no internet. You receive the behavioural facts the sandbox recorded, as JSON.

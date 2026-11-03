@@ -215,7 +215,8 @@
     const step = () => {
       const e = queue.shift();
       if (!e) { draining = false; return; }
-      const wait = apply(e);
+      let wait = 0;
+      try { wait = apply(e); } catch (err) { console.error(err); }
       setTimeout(step, reduced ? 0 : wait);
     };
     step();
@@ -251,7 +252,7 @@
       case 'delete': line('note', 'delete', `${e.path} (inside the box)`, e.at); return 220;
       case 'stdout': line('note', 'stdout', e.text, e.at); return 160;
       case 'page':
-        $('#shot .url').textContent = e.url; $('#shot .pg b').textContent = e.title || 'Page';
+        $('#shot .url').textContent = e.url; { const t = $('#shot .pg b'); if (t) t.textContent = e.title || 'Page'; }
         $('#shot').classList.add('on'); line('note', 'visit', e.url, e.at); return 600;
       case 'screenshot': {
         const img = document.createElement('img'); img.src = e.data; img.alt = 'What the page looked like inside the box';
