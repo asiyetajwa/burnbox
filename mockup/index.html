@@ -300,7 +300,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: var(--card); }
   <main id="v-verdict" hidden>
     <section class="verdict">
       <article class="v-card">
-        <div class="v-top" id="v-top"><p class="eyebrow" id="v-run"></p><h2 id="v-word"></h2><p id="v-file"></p></div>
+        <div class="v-top" id="v-top"><p class="eyebrow" id="v-runid"></p><h2 id="v-word"></h2><p id="v-file"></p></div>
         <div class="v-body">
           <p id="v-summary"></p>
           <div class="counts" id="v-counts"></div>
@@ -598,7 +598,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: var(--card); }
   function verdict(run) {
     const sc = run.sc;
     $('#v-top').className = `v-top ${sc.verdict}`;
-    $('#v-run').textContent = `Run ${run.id} · ${String(sc.time)} s inside the box`;
+    $('#v-runid').textContent = `Run ${run.id} · ${String(sc.time)} s inside the box`;
     $('#v-word').textContent = WORD[sc.verdict];
     $('#v-file').textContent = run.name;
     $('#v-summary').textContent = sc.summary;
