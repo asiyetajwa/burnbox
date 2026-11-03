@@ -337,6 +337,16 @@ def main():
     plant_canaries(canary_values)
     emit({"type": "stage", "stage": "canaries", "planted": list(CANARY_FILES)})
 
+    if os.environ.get("BB_MODE") == "email":
+        sys.path.insert(0, "/opt/burnbox")
+        from email_reader import read_email
+        emit({"type": "stage", "stage": "detonate", "cmd": f"open email {name}"})
+        report = read_email(data, emit)
+        report.update({"name": name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "finished": now()})
+        sys.stdout.write("\n" + MARKER + "\n" + json.dumps(report) + "\n")
+        sys.stdout.flush()
+        return
+
     kind = kind_of(name, data)
     report = {
         "name": name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "kind": kind,

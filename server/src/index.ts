@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { config } from './config.ts';
 import { loadKeys, publicKeyPem, verifyReceipt, type Receipt } from './receipt.ts';
-import { createRun, getRun, listRuns, loadRuns, sampleInput, samplesList, subscribe, type Run } from './runs.ts';
+import { createRun, getRun, listRuns, loadRuns, looksLikeEmail, sampleInput, samplesList, subscribe, type Run } from './runs.ts';
+import { mailAddress, startMail } from './mail.ts';
 import { sandboxStatus, sweep } from './sandbox.ts';
 
 const TYPES: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
@@ -52,7 +53,7 @@ function publicRun(r: Run): Record<string, unknown> {
   const rep = r.box?.report ?? null;
   return {
     id: r.id, kind: r.kind, name: r.name, size: r.size, sha256: r.sha256, status: r.status, createdAt: r.createdAt, error: r.error,
-    facts: r.facts, verdict: r.verdict, receipt: r.receipt,
+    facts: r.facts, verdict: r.verdict, receipt: r.receipt, email: r.email, parent: r.parent, children: r.children, via: r.via,
     box: r.box ? { container: r.box.container.slice(0, 12), limits: r.box.limits, startedAt: r.box.startedAt, destroyedAt: r.box.destroyedAt, destroyed: r.box.destroyed } : undefined,
     events: r.events,
     stdout: rep ? String(rep.stdout ?? '').slice(0, 4000) : undefined,
@@ -62,7 +63,16 @@ function publicRun(r: Run): Record<string, unknown> {
 }
 
 function summary(r: Run): Record<string, unknown> {
-  return { id: r.id, kind: r.kind, name: r.name, status: r.status, createdAt: r.createdAt, verdict: r.verdict?.level, canaries: r.facts ? r.facts.canaries.length : 0, canariesPlanted: r.kind === 'link' ? 1 : 3, egress: r.facts?.egressTotal ?? 0, destroyedAt: r.box?.destroyedAt };
+  const kids = (r.children ?? []).map(getRun).filter((k): k is Run => Boolean(k));
+  const all = [r, ...kids];
+  return {
+    id: r.id, kind: r.kind, name: r.name, status: r.status, createdAt: r.createdAt, verdict: r.verdict?.level, via: r.via,
+    canaries: all.reduce((n, k) => n + (k.facts ? k.facts.canaries.length : 0), 0),
+    canariesPlanted: r.kind === 'email' ? kids.reduce((n, k) => n + (k.kind === 'link' ? 1 : 3), 0) : r.kind === 'link' ? 1 : 3,
+    egress: all.reduce((n, k) => n + (k.facts?.egressTotal ?? 0), 0),
+    boxes: all.length,
+    destroyedAt: r.receipt?.body.destroyedAt ?? r.box?.destroyedAt,
+  };
 }
 
 const validUrl = (s: string): boolean => {
@@ -76,7 +86,7 @@ async function api(req: IncomingMessage, res: ServerResponse, path: string, url:
   const ip = String(req.headers['x-forwarded-for'] ?? req.socket.remoteAddress ?? '').split(',')[0].trim();
 
   if (path === '/api/health') {
-    send(res, 200, { ok: true, sandbox: await sandboxStatus(), inference: config.llm.stub ? 'stub' : 'vultr' });
+    send(res, 200, { ok: true, sandbox: await sandboxStatus(), inference: config.llm.stub ? 'stub' : 'vultr', forwardTo: mailAddress() });
     return;
   }
   if (path === '/api/samples' && req.method === 'GET') { send(res, 200, samplesList()); return; }
@@ -101,7 +111,7 @@ async function api(req: IncomingMessage, res: ServerResponse, path: string, url:
       if (o.sample) {
         const s = sampleInput(o.sample);
         if (!s) { send(res, 404, { error: 'No such test sample.' }); return; }
-        send(res, 202, publicRun(createRun(s.kind, s.name, s.input, o.sample)));
+        send(res, 202, publicRun(createRun(s.kind, s.name, s.input, { sample: o.sample })));
         return;
       }
       if (o.url) {
@@ -115,7 +125,7 @@ async function api(req: IncomingMessage, res: ServerResponse, path: string, url:
     }
     if (!body.length) { send(res, 400, { error: 'The file is empty.' }); return; }
     const name = decodeURIComponent(url.searchParams.get('name') ?? 'sample').slice(0, 120);
-    send(res, 202, publicRun(createRun('file', name, body)));
+    send(res, 202, publicRun(createRun(looksLikeEmail(name, body) ? 'email' : 'file', name, body)));
     return;
   }
   const m = /^\/api\/runs\/(BBX-\d{4,})(\/events|\/receipt)?$/.exec(path);
@@ -167,3 +177,4 @@ const server = createServer((req, res) => {
 server.listen(config.port, config.host, () => {
   console.log(`Burn Box listening on ${config.host}:${String(config.port)} (inference: ${config.llm.stub ? 'stub' : 'vultr'}${swept ? `, burned ${String(swept)} leftover boxes` : ''})`);
 });
+startMail();

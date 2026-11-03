@@ -118,11 +118,13 @@
   api('/api/health').then((h) => {
     const ok = h.sandbox.docker && h.sandbox.box;
     $('#where').innerHTML = `<i style="${ok ? '' : 'background:var(--hot);box-shadow:0 0 10px var(--hot)'}"></i>Vultr · ${ok ? 'Box Ready' : 'Box Offline'}${h.inference === 'vultr' ? ' · Vultr Inference' : ''}`;
+    if (h.forwardTo) $('#fwd-addr').textContent = h.forwardTo;
+    else { $('#fwd-addr').textContent = 'check@your-burnbox-domain'; $('#fwd-note').textContent = 'Forwarding switches on when this Burn Box has its own mail domain. Until then, drop the saved email below.'; }
   }).catch(() => { $('#where').innerHTML = '<i style="background:var(--hot);box-shadow:0 0 10px var(--hot)"></i>Server Unreachable'; });
 
   // Views.
   function show(v) {
-    for (const k of ['new', 'run', 'verdict', 'past']) $(`#v-${k}`).hidden = k !== v;
+    for (const k of ['new', 'run', 'email', 'verdict', 'past']) $(`#v-${k}`).hidden = k !== v;
     document.querySelectorAll('.nav button').forEach((b) => b.setAttribute('aria-current', (b.dataset.go === v || (v !== 'past' && b.dataset.go === 'new')) ? 'page' : 'false'));
     scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   }
@@ -139,43 +141,53 @@
     mode = m;
     $('#m-file').setAttribute('aria-pressed', String(m === 'file'));
     $('#m-link').setAttribute('aria-pressed', String(m === 'link'));
+    $('#m-email').setAttribute('aria-pressed', String(m === 'email'));
     const chosen = !$('#chosen').hidden;
     $('#file-pane').hidden = m !== 'file' || chosen;
     $('#link-pane').hidden = m !== 'link' || chosen;
+    $('#email-pane').hidden = m !== 'email' || chosen;
   }
   $('#m-file').addEventListener('click', () => { reset(); setMode('file'); });
   $('#m-link').addEventListener('click', () => { reset(); setMode('link'); $('#link').focus(); });
-  function showChosen(name, sub, color) {
+  $('#m-email').addEventListener('click', () => { reset(); setMode('email'); });
+  $('#copy-addr').addEventListener('click', () => {
+    const text = $('#fwd-addr').textContent;
+    navigator.clipboard?.writeText(text).then(() => toast('Address copied'), () => { getSelection()?.selectAllChildren($('#fwd-addr')); toast('Address selected, copy it from here'); });
+  });
+  function showChosen(name, sub) {
     const c = $('#chosen'); c.hidden = false;
     c.querySelector('b').textContent = name; c.querySelector('span').textContent = sub;
-    $('#file-pane').hidden = true; $('#link-pane').hidden = true;
+    $('#file-pane').hidden = true; $('#link-pane').hidden = true; $('#email-pane').hidden = true;
     $('#detonate').disabled = false;
   }
   function reset() {
-    choice = null; $('#chosen').hidden = true; $('#detonate').disabled = true; $('#link').value = ''; $('#file-in').value = '';
+    choice = null; $('#chosen').hidden = true; $('#detonate').disabled = true; $('#link').value = ''; $('#file-in').value = ''; $('#eml-in').value = '';
     document.querySelectorAll('.sample').forEach((b) => b.setAttribute('aria-pressed', 'false'));
     setMode(mode);
   }
   $('#clear').addEventListener('click', reset);
-  const colors = { invoice: 'var(--clay)', phish: 'var(--blush)', benign: 'var(--mint)' };
+  const SAMPLE_NOTE = { email: 'Test email · opened in a box, then split into a box per link and attachment', phish: 'Test link · opens in a browser inside the box' };
   document.querySelectorAll('.sample').forEach((b) => b.addEventListener('click', () => {
     const id = b.dataset.sample;
-    const isLink = id === 'phish';
-    setMode(isLink ? 'link' : 'file');
-    choice = { type: 'sample', id, name: b.querySelector('b').textContent, kind: isLink ? 'link' : 'file' };
+    const kind = id === 'phish' ? 'link' : id === 'email' ? 'email' : 'file';
+    setMode(kind);
+    choice = { type: 'sample', id, name: b.querySelector('b').textContent, kind };
     document.querySelectorAll('.sample').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    showChosen(choice.name, isLink ? 'Test link · opens in a browser inside the box' : 'Test file · self-written, harmless outside the box', colors[id]);
+    showChosen(choice.name, SAMPLE_NOTE[id] ?? 'Test file · self-written, harmless outside the box');
   }));
-  const drop = $('#drop'), fileIn = $('#file-in');
-  ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, () => drop.classList.remove('over')));
-  drop.addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) takeFile(f); });
-  fileIn.addEventListener('change', () => { if (fileIn.files[0]) takeFile(fileIn.files[0]); });
+  for (const [dropSel, inSel] of [['#drop', '#file-in'], ['#eml-drop', '#eml-in']]) {
+    const drop = $(dropSel), input = $(inSel);
+    ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, () => drop.classList.remove('over')));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) takeFile(f); });
+    input.addEventListener('change', () => { if (input.files[0]) takeFile(input.files[0]); });
+  }
   function takeFile(f) {
     if (f.size > 25 * 1024 * 1024) { toast('Files can be up to 25 MB.'); return; }
     const kb = f.size < 1048576 ? `${Math.max(1, Math.round(f.size / 1024))} KB` : `${(f.size / 1048576).toFixed(1)} MB`;
-    choice = { type: 'file', file: f, name: f.name, kind: 'file' };
-    showChosen(f.name, `${kb} · ready to detonate`, 'var(--sage)');
+    const isEmail = /\.(eml|msg)$/i.test(f.name) || f.type === 'message/rfc822';
+    choice = { type: 'file', file: f, name: f.name, kind: isEmail ? 'email' : 'file' };
+    showChosen(f.name, isEmail ? `${kb} · email, opened in a box and split into a box per link and attachment` : `${kb} · ready to detonate`);
   }
   $('#link').addEventListener('input', (e) => {
     const v = e.target.value.trim();
@@ -223,6 +235,7 @@
   }
 
   function watch(run) {
+    if (run.kind === 'email') { watchEmail(run); return; }
     current = run;
     counts = { egress: 0, deny: 0, proc: 0 };
     queue = []; draining = false;
@@ -319,17 +332,20 @@
   const utc = (iso) => (iso ? `${iso.slice(0, 10)} ${iso.slice(11, 19)} UTC` : '');
   function renderVerdict(r) {
     const v = r.verdict, f = r.facts, b = r.box;
+    current = r;
     $('#v-top').className = `v-top ${CLS[v.level]}`;
-    $('#v-runid').textContent = `Run ${r.id}${r.duration ? ` · ${r.duration} s inside the box` : ''}`;
+    $('#v-runid').textContent = `Run ${r.id}${r.duration ? ` · ${r.duration} s inside the box` : ''}${r.parent ? ` · part of ${r.parent}` : ''}`;
     $('#v-word').textContent = WORD[v.level];
     $('#v-file').textContent = r.name;
     $('#v-summary').textContent = v.summary;
+    const col = { canary: 'linear-gradient(135deg, var(--amber-a), var(--amber-b))', egress: 'var(--hot)', deny: '#c4b8ff', note: '#98c2e6', ok: 'var(--safe)' };
+    $('#v-tried').innerHTML = v.tried.map((t, i) => `<li><i style="background:${col[t.kind]}">${i + 1}</i><span>${esc(t.what)}</span><em>${esc(t.outcome)}</em></li>`).join('');
+    $('#v-children').hidden = r.kind !== 'email';
+    if (r.kind === 'email') { renderEmailVerdict(r); return; }
     const planted = r.kind === 'link' ? 1 : 3;
     const reached = f.canaries.length;
     const denied = f.writesDenied.length + f.deletesDenied.length;
     $('#v-counts').innerHTML = `<div class="count"><b>${reached} of ${planted}</b><span>Canaries Touched</span></div><div class="count"><b>${f.egressTotal}</b><span>Egress Blocked</span></div><div class="count"><b>${denied}</b><span>Changes Denied</span></div>`;
-    const col = { canary: 'linear-gradient(135deg, var(--amber-a), var(--amber-b))', egress: 'var(--hot)', deny: '#c4b8ff', note: '#98c2e6', ok: 'var(--safe)' };
-    $('#v-tried').innerHTML = v.tried.map((t, i) => `<li><i style="background:${col[t.kind]}">${i + 1}</i><span>${esc(t.what)}</span><em>${esc(t.outcome)}</em></li>`).join('');
     const kindOf = { stage: 'box', exec: 'exec', canary: 'canary', egress: 'egress', lookup: 'egress', write_denied: 'deny', delete_denied: 'deny', write: 'ok', stdout: 'note', post: 'canary', page: 'note', note: 'note' };
     $('#v-trace').innerHTML = r.events.filter((e) => kindOf[e.type]).map((e) => {
       const text = e.type === 'stage' ? (e.stage === 'sealed' ? `container ${e.container}` : e.stage === 'detonate' ? (e.cmd ?? '') : '') : e.type === 'egress' ? `${e.host}:${e.port} ${e.blocked ? 'BLOCKED' : ''}` : (e.path ?? e.host ?? e.text ?? e.to ?? e.url ?? e.message ?? (e.argv ?? []).join(' '));
@@ -345,6 +361,154 @@
     ].map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join('');
     show('verdict');
   }
+  function renderEmailVerdict(r) {
+    const e = r.email, b = r.box, rc = r.receipt?.body ?? {};
+    const kids = e.children;
+    const red = e.findings.filter((x) => x.severity === 'high').length;
+    $('#v-counts').innerHTML = `<div class="count"><b>${1 + kids.length}</b><span>Boxes Burned</span></div><div class="count"><b>${red}</b><span>Red Flags</span></div><div class="count"><b>${kids.filter((k) => k.level === 'malicious').length} of ${kids.length}</b><span>Parts Malicious</span></div>`;
+    $('#v-kids').innerHTML = '';
+    kids.forEach((k) => {
+      const card = document.createElement('button'); card.type = 'button'; card.className = 'kid dev';
+      card.innerHTML = `<svg viewBox="-60 -60 120 120" aria-hidden="true"></svg><div><b>${esc(k.name)}</b><span>${k.kind === 'file' ? 'Attachment' : 'Link'} · ${esc(k.id)}</span>${k.level ? `<span class="pill ${CLS[k.level]}">${PILL[k.level]}</span>` : ''}</div>`;
+      const d = miniDial(card.querySelector('svg')); d.progress(1); d.done(k.level);
+      card.addEventListener('click', async () => { try { renderVerdict(await api(`/api/runs/${k.id}`)); } catch (err) { toast(err.message); } });
+      $('#v-kids').appendChild(card);
+    });
+    $('#v-trace').innerHTML = r.events.filter((x) => ['finding', 'extract', 'envelope'].includes(x.type) || (x.type === 'child' && x.ev.type === 'done') || (x.type === 'stage' && ['sealed', 'burned', 'fanout'].includes(x.stage))).map((x) => {
+      const [k, verb, text] = x.type === 'finding' ? [x.severity === 'high' ? 'egress' : 'note', 'flag', `${x.what}: ${x.detail}`]
+        : x.type === 'extract' ? ['exec', 'extract', `${x.kind} ${x.name}`]
+        : x.type === 'envelope' ? ['box', 'envelope', `${x.from} · ${x.subject}`]
+        : x.type === 'child' ? ['canary', 'verdict', `${x.child} ${x.ev.verdict ?? ''}`]
+        : ['box', x.stage, x.stage === 'fanout' ? `${x.boxes.length} boxes` : `container ${x.container}`];
+      return `<div class="ln t-${k}"><time>${hhmmss(x.at)}</time><b>${esc(verb)}</b><span>${esc(text)}</span></div>`;
+    }).join('');
+    $('#rc').innerHTML = [
+      ['run', r.id], ['what', r.name], ['from', e.from], ['sha256', `${r.sha256.slice(0, 16)}…`],
+      ['boxes', `${1 + kids.length} burned · ${[b.container, ...kids.map((k) => k.id)].join(', ')}`],
+      ['started', utc(b.startedAt)], ['destroyed', `${utc(rc.destroyedAt)}${rc.destroyed ? ', all confirmed' : ''}`],
+      ['verdict', `${PILL[r.verdict.level]} · ${rc.verdictBy ?? ''}`], ['signature', `ed25519 ${(r.receipt?.signature ?? '').slice(0, 10)}…`],
+    ].map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join('');
+    show('verdict');
+  }
+
+  // A small dial for each box an email is split into.
+  function miniDial(svg) {
+    const ticks = [];
+    for (let i = 0; i < 36; i++) {
+      const a = -Math.PI / 2 + (i / 36) * Math.PI * 2;
+      const [x1, y1] = polar(48, a), [x2, y2] = polar(56, a);
+      ticks.push(el('line', { x1, y1, x2, y2, stroke: '#2a2a2c', 'stroke-width': 3, 'stroke-linecap': 'round' }, svg));
+    }
+    const spin = el('g', { class: 'k-spin' }, svg);
+    el('circle', { r: 43, fill: '#1d1d1f', stroke: 'rgba(255,255,255,.07)' }, spin);
+    for (let i = 0; i < 40; i++) { const a = (i / 40) * Math.PI * 2; const [x1, y1] = polar(36, a), [x2, y2] = polar(43, a); el('line', { x1, y1, x2, y2, stroke: 'rgba(0,0,0,.6)', 'stroke-width': 2 }, spin); }
+    el('circle', { r: 34, fill: '#18181a' }, svg);
+    const core = el('circle', { r: 17, fill: '#2b2b2e', stroke: 'rgba(255,255,255,.08)' }, svg);
+    return {
+      progress(f) { const lit = Math.round(f * 36); ticks.forEach((t, i) => t.setAttribute('stroke', i < lit ? (i < 18 ? AMBER_A : AMBER_B) : '#2a2a2c')); },
+      flash(color) { core.setAttribute('fill', color); setTimeout(() => core.setAttribute('fill', '#2b2b2e'), 450); },
+      done(level) { core.setAttribute('fill', level === 'malicious' ? HOT : level === 'suspicious' ? '#f6c453' : level === 'safe' ? '#9bd6a9' : '#2b2b2e'); },
+    };
+  }
+
+  // Live email run: the envelope box, then one box per link and attachment, side by side.
+  const E_STEPS = ['Seal', 'Open Email', 'Read Envelope', 'Split', 'Detonate Parts', 'Verdict'];
+  function setEStep(i) {
+    const host = $('#e-steps');
+    if (!host.querySelector('.track')) host.innerHTML = '<div class="track"><i></i><b></b></div><div class="steps-label"><span></span><span></span></div>';
+    const pct = Math.round(((i + 1) / E_STEPS.length) * 100);
+    host.querySelector('.track i').style.width = `${pct}%`;
+    const b = host.querySelector('.track b'); b.textContent = `${pct}%`; b.style.color = pct >= 88 ? '#2a1604' : '';
+    const [now, of] = host.querySelectorAll('.steps-label span');
+    now.textContent = E_STEPS[i]; of.textContent = `Step ${i + 1} of ${E_STEPS.length}`;
+  }
+  function eline(kind, verb, text, at) {
+    const ln = document.createElement('div'); ln.className = `ln t-${kind}`;
+    ln.innerHTML = `<time>${hhmmss(at)}</time><b>${esc(verb)}</b><span>${esc(text)}</span>`;
+    const tr = $('#e-trace'); tr.querySelector('.cursor')?.before(ln); tr.scrollTop = tr.scrollHeight;
+  }
+  function watchEmail(run) {
+    current = run;
+    const q = []; let busy = false;
+    const kids = new Map();
+    let envDial;
+    $('#e-id').textContent = `Run ${run.id} · Email${run.via === 'email' ? ' · Forwarded' : ''}`;
+    $('#e-name').textContent = run.name;
+    const st = $('#e-status'); st.classList.remove('done'); st.querySelector('span').textContent = 'Opening the Email';
+    $('#env-from').textContent = 'Reading inside a sealed box'; $('#env-subject').textContent = '';
+    $('#flags').innerHTML = ''; $('#e-trace').innerHTML = '<span class="cursor"></span>';
+    $('#kids').innerHTML = '<div class="kid dev live" id="kid-env"><svg viewBox="-60 -60 120 120" aria-hidden="true"></svg><div><b>The email</b><span>Envelope box · no network</span></div></div>';
+    envDial = miniDial($('#kid-env svg'));
+    setEStep(0); show('email');
+
+    const apply = (e) => {
+      switch (e.type) {
+        case 'stage':
+          if (e.stage === 'sealed') { eline('box', 'sealed', `envelope box ${e.container}, no network`, e.at); envDial.progress(.3); setEStep(0); return 350; }
+          if (e.stage === 'detonate') { eline('exec', 'open', 'the email, inside the box', e.at); envDial.progress(.55); setEStep(1); return 350; }
+          if (e.stage === 'burned') { eline('box', 'burned', `envelope box ${e.container}`, e.at); envDial.progress(1); $('#kid-env').classList.remove('live'); $('#kid-env span').textContent = 'Envelope box · burned'; return 300; }
+          if (e.stage === 'fanout') {
+            setEStep(3);
+            eline('exec', 'split', `${e.boxes.length} parts, ${e.boxes.length} new boxes`, e.at);
+            for (const k of e.boxes) {
+              const card = document.createElement('div'); card.className = 'kid dev live';
+              card.innerHTML = `<svg viewBox="-60 -60 120 120" aria-hidden="true"></svg><div><b>${esc(k.name)}</b><span>${k.kind === 'file' ? 'Attachment' : 'Link'} · ${esc(k.id)}</span><span class="k-state">Sealing</span></div>`;
+              $('#kids').appendChild(card);
+              kids.set(k.id, { card, dial: miniDial(card.querySelector('svg')), n: 0 });
+            }
+            setTimeout(() => setEStep(4), reduced ? 0 : 500);
+            return 700;
+          }
+          if (e.stage === 'verdict') { setEStep(5); st.querySelector('span').textContent = 'Writing Verdict'; return 300; }
+          return 80;
+        case 'envelope': $('#env-from').textContent = e.from; $('#env-subject').textContent = e.subject; setEStep(2); if (e.forwardedBy) eline('note', 'forward', `unwrapped, forwarded by ${e.forwardedBy}`, e.at); return 450;
+        case 'finding': {
+          const li = document.createElement('li'); li.className = e.severity;
+          li.innerHTML = `<i></i><b>${esc(e.what)}</b><span>${esc(e.detail)}</span>`;
+          $('#flags').appendChild(li);
+          eline(e.severity === 'high' ? 'egress' : 'note', 'flag', e.what, e.at);
+          return e.severity === 'high' ? 650 : 400;
+        }
+        case 'extract': eline('exec', 'extract', `${e.kind} ${e.name}`, e.at); return 300;
+        case 'child': {
+          const k = kids.get(e.child); if (!k) return 0;
+          const ev = e.ev; const label = k.card.querySelector('.k-state');
+          const STAGE_P = { sealed: .2, canaries: .35, detonate: .5, burning: .85, burned: .92, verdict: .96 };
+          if (ev.type === 'stage' && STAGE_P[ev.stage]) { k.dial.progress(STAGE_P[ev.stage]); label.textContent = { sealed: 'Sealed', canaries: 'Canaries planted', detonate: 'Detonating', burning: 'Burning', burned: 'Burned', verdict: 'Writing verdict' }[ev.stage]; return ev.stage === 'detonate' ? 200 : 90; }
+          if (ev.type === 'canary') { k.dial.flash(AMBER_B); eline('canary', 'canary', `${e.child} reached for ${ev.canary === 'login' ? 'the fake login' : ev.canary.replace('_', ' ')}`, e.at); return 300; }
+          if (ev.type === 'egress' && ev.blocked !== false) { k.dial.flash(HOT); k.n += 1; label.textContent = `Blocked ${k.n} escape${k.n > 1 ? 's' : ''}`; return 120; }
+          if (ev.type === 'post') { k.dial.flash(AMBER_B); eline('canary', 'posted', `${e.child} sent the fake login to ${ev.to}`, e.at); return 400; }
+          if (ev.type === 'page') { eline('note', 'visit', `${e.child} page opened in the box`, e.at); return 200; }
+          if (ev.type === 'write_denied' || ev.type === 'delete_denied') { k.dial.flash('#c4b8ff'); return 120; }
+          if (ev.type === 'done') {
+            k.dial.progress(1); k.dial.done(ev.verdict); k.card.classList.remove('live');
+            label.outerHTML = `<span class="pill ${CLS[ev.verdict]}">${PILL[ev.verdict]}</span>`;
+            eline(ev.verdict === 'malicious' ? 'egress' : 'ok', 'verdict', `${e.child} ${PILL[ev.verdict]}, box burned`, e.at); return 500;
+          }
+          if (ev.type === 'error') { label.textContent = 'Box failed'; return 100; }
+          return 0;
+        }
+        case 'note': eline('note', 'note', e.message, e.at); return 150;
+        case 'error': st.querySelector('span').textContent = 'Failed'; eline('deny', 'error', e.message, e.at); toast(e.message); return 0;
+        case 'done':
+          $('#e-trace .cursor')?.remove(); st.classList.add('done'); st.querySelector('span').textContent = 'Done';
+          setTimeout(async () => { try { renderVerdict(await api(`/api/runs/${run.id}`)); } catch (err) { toast(err.message); } }, reduced ? 0 : 900);
+          return 0;
+        default: return 0;
+      }
+    };
+    const step = () => {
+      const ev = q.shift();
+      if (!ev) { busy = false; return; }
+      let wait = 0;
+      try { wait = apply(ev); } catch (err) { console.error(err); }
+      setTimeout(step, reduced ? 0 : wait);
+    };
+    const es = new EventSource(`/api/runs/${run.id}/events`);
+    es.onmessage = (m) => { const ev = JSON.parse(m.data); if (ev.type === 'end') { es.close(); return; } q.push(ev); if (!busy) { busy = true; step(); } };
+    es.onerror = () => { es.close(); };
+  }
+
   $('#again').addEventListener('click', () => { reset(); show('new'); });
   $('#dl').addEventListener('click', () => { if (current) location.href = `/api/runs/${current.id}/receipt`; });
 

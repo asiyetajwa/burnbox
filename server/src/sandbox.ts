@@ -46,7 +46,7 @@ function docker(args: string[], timeoutMs = 20000): Promise<{ code: number; out:
   });
 }
 
-export function limitsFor(kind: 'file' | 'link'): Record<string, string | number> {
+export function limitsFor(kind: 'file' | 'link' | 'email'): Record<string, string | number> {
   const l = config.limits;
   return {
     network: kind === 'link' ? `${config.labNetwork} (internal, no internet)` : 'none',
@@ -61,7 +61,8 @@ export function limitsFor(kind: 'file' | 'link'): Record<string, string | number
   };
 }
 
-type Spec = { kind: 'file' | 'link'; name: string; input: Buffer; env: Record<string, string> };
+// An email is opened in the same sealed file box (no network): reading it is the risky part.
+type Spec = { kind: 'file' | 'link' | 'email'; name: string; input: Buffer; env: Record<string, string> };
 
 export async function detonate(spec: Spec, onEvent: (e: BoxEvent) => void): Promise<BoxResult> {
   const name = `bbx-${alnum(10).toLowerCase()}`;
@@ -76,12 +77,12 @@ export async function detonate(spec: Spec, onEvent: (e: BoxEvent) => void): Prom
     '--pids-limit', String(limits.processes), '--memory', String(limits.memory), '--memory-swap', String(limits.memory),
     '--cpus', String(limits.cpus), '--ulimit', 'nofile=512:512', '--ulimit', 'fsize=33554432:33554432',
     '--log-driver', 'none'];
-  if (spec.kind === 'file') args.push('--network', 'none', '--dns', '192.0.2.53');
+  if (spec.kind !== 'link') args.push('--network', 'none', '--dns', '192.0.2.53');
   else args.push('--network', config.labNetwork, '--shm-size', '128m');
   if (config.runtime) args.push('--runtime', config.runtime);
   for (const [k, v] of Object.entries(spec.env)) args.push('-e', `${k}=${v}`);
   args.push('-e', `BB_TIMEOUT=${String(limits.seconds)}`);
-  args.push(spec.kind === 'file' ? config.boxImage : config.browserImage);
+  args.push(spec.kind === 'link' ? config.browserImage : config.boxImage);
 
   const startedAt = new Date().toISOString();
   let container = '';

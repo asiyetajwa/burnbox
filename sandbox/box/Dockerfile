@@ -19,7 +19,7 @@ RUN mkdir -p /srv/shared/Documents && \
     printf 'Q3 budget, draft 2\n' > /srv/shared/Documents/budget-q3.txt && \
     printf 'Board minutes, October\n' > /srv/shared/Documents/minutes-oct.txt
 
-COPY harness.py /opt/burnbox/harness.py
+COPY harness.py email_reader.py /opt/burnbox/
 COPY hook/sitecustomize.py /opt/burnbox/hook/sitecustomize.py
 
 USER 1000:1000

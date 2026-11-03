@@ -2,7 +2,7 @@
 
 **Send us the file you're afraid to open.** A detonation chamber for small teams.
 
-Upload a suspicious file or paste a suspicious link. Burn Box opens it inside a disposable sandbox on a Vultr VM, records everything it tries to do, then burns the box. You get a plain-English verdict and a signed destruction receipt.
+Forward a suspicious email, upload a suspicious file or paste a suspicious link. Burn Box opens it inside a disposable sandbox on a Vultr VM, records everything it tries to do, then burns the box. You get a plain-English verdict and a signed destruction receipt.
 
 Built for the Vultr Agent Rush, Challenge 1: Blast Radius Zero. Here the containment is the product: Burn Box does work that is only safe because of the box.
 
@@ -18,6 +18,20 @@ Built for the Vultr Agent Rush, Challenge 1: Blast Radius Zero. Here the contain
 ### The sample cannot talk the judge out of it
 
 Everything the sample prints is attacker-controlled text. The model sees it only as quoted evidence, and the verdict has a floor set by rules from the facts alone. Reading planted secrets and then reaching out is malicious, whatever the model says. The model can raise a verdict, never lower it below that floor. There is a test for this (`server/test/verdict.test.ts`).
+
+### Emails: don't open it, forward it
+
+The riskiest moment is opening the email to get at its link or attachment. So the whole email is the sample.
+
+- **Forward it.** Right-click the email in the inbox and choose Forward as Attachment, then send it to `check@<your Burn Box domain>`. The email itself is never opened. `server/src/mail.ts` receives it (inbound only). You can also drop a saved `.eml` on the web app.
+- **The envelope is read inside a box.** Parsing a hostile email is itself risky, so `sandbox/box/email_reader.py` runs in a sealed box with no network. It unwraps a forwarded original and reads:
+  - who really sent it, and the SPF, DKIM and DMARC results the user's own mail provider stamped on it;
+  - a reply-to that points elsewhere, and lookalike domains (`northwind-paybles` for `northwind-payables`, `rnicrosoft` for `microsoft`);
+  - link text that lies about where the link goes;
+  - pressure language, and attachments that run code.
+- **Then it splits.** Every link and attachment gets a fresh box of its own and its own verdict, side by side on screen. One combined verdict and one signed receipt cover every box that was burned.
+
+The demo email is `samples/invoice_overdue.eml` (built by `samples/make_demo_email.py`). It opens three boxes, one each for the envelope, the attachment and the link. All three burn, and the verdict is Malicious.
 
 ### Links: nothing real is ever typed
 
@@ -78,6 +92,7 @@ All self-written; there is no real malware here and never will be.
 | `samples/invoice_sample.py` | Poses as an invoice helper. Reads the canary files, tries to send them to `collector.lab.test` and `203.0.113.7` (a reserved test address), tries to install itself in `/etc/cron.d`, tries to delete shared documents. Does nothing outside a Burn Box. | Malicious |
 | phish page (`sandbox/lab/lab.py`) | A fake invoice sign-in page that sends whatever is typed to a collector on another host. Lab network only. | Malicious |
 | `samples/benign_sample.py` | Writes one note in its own folder. | Safe |
+| `samples/invoice_overdue.eml` | The demo phishing email: spoofed sender (SPF, DKIM, DMARC fail), a lookalike reply-to, a link whose text lies, and `invoice_sample.py` attached. | Malicious, 3 boxes |
 
 `docs/demo/invoice-overdue-email.html` is the demo "invoice overdue" email for the video.
 

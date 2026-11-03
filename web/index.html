@@ -145,6 +145,43 @@ p { margin: 0; }
 @keyframes in { from { opacity: 0; transform: translateY(4px); } }
 .note { border-radius: 20px; padding: 14px 18px; font-size: 13.5px; color: var(--fg-2); font-weight: 300; }
 
+/* Email intake */
+.email-in { display: grid; gap: 14px; }
+.forward { border-radius: 24px; padding: 18px 20px; background: var(--well); box-shadow: var(--sink); display: grid; gap: 10px; }
+.forward p:not(.eyebrow) { color: var(--fg-2); font-size: 14px; font-weight: 300; }
+.forward b { color: var(--fg); font-weight: 500; }
+.addr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.addr code { font: 500 17px/1 var(--mono); padding: 14px 18px; border-radius: 999px; background: linear-gradient(180deg, var(--shell-a), var(--shell-b)); box-shadow: var(--raise-sm); color: var(--amber-a); overflow-wrap: anywhere; }
+.addr .btn { padding: 12px 18px; font-size: 14px; }
+.forward small { color: var(--fg-3); font-size: 12.5px; }
+.drop.small { padding: 18px; gap: 6px; }
+.drop.small b { font-size: 16px; }
+
+/* Email run */
+.env { border-radius: 22px; padding: 16px 18px; display: grid; gap: 8px; }
+.env dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; margin: 0; font-size: 14px; }
+.env dt { font: 400 11.5px/1.9 var(--mono); color: var(--fg-3); text-transform: uppercase; letter-spacing: .05em; }
+.env dd { margin: 0; overflow-wrap: anywhere; }
+.flags { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.flags li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 2px 12px; align-items: baseline; padding: 11px 16px; border-radius: 18px; background: linear-gradient(180deg, var(--shell-a), var(--shell-b)); box-shadow: var(--raise-sm); animation: in .3s ease-out; }
+.flags li i { width: 9px; height: 9px; border-radius: 50%; grid-row: span 2; transform: translateY(1px); }
+.flags li b { font-weight: 500; font-size: 14px; }
+.flags li span { font-size: 12.5px; color: var(--fg-2); overflow-wrap: anywhere; }
+.flags li.high i { background: var(--hot); box-shadow: 0 0 10px var(--hot); }
+.flags li.medium i { background: var(--sus); box-shadow: 0 0 10px var(--sus); }
+.flags li.low i { background: var(--fg-3); }
+.flags li.ok i { background: var(--safe); box-shadow: 0 0 10px var(--safe); }
+.kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.kid { border-radius: 26px; padding: 14px; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: center; animation: in .35s ease-out; border: 0; text-align: left; color: inherit; font: inherit; }
+button.kid { cursor: pointer; }
+.kid svg { width: 76px; height: 76px; display: block; }
+.kid b { display: block; font: 500 13.5px/1.25 var(--mono); overflow-wrap: anywhere; }
+.kid span { display: block; font-size: 12.5px; color: var(--fg-3); margin-top: 3px; }
+.kid .pill { margin-top: 8px; }
+.kid.pending svg { opacity: .55; }
+.kid .k-spin { transform-box: view-box; transform-origin: 0 0; }
+.kid.live .k-spin { animation: spin 6s linear infinite; }
+
 /* Verdict */
 .verdict { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 22px; padding-top: 12px; }
 .v-card { overflow: hidden; }
@@ -241,6 +278,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255, 255, 255
           <div class="seg" role="group" aria-label="What to check">
             <button type="button" id="m-file" aria-pressed="true">A File</button>
             <button type="button" id="m-link" aria-pressed="false">A Link</button>
+            <button type="button" id="m-email" aria-pressed="false">An Email</button>
           </div>
           <div id="file-pane">
             <label class="drop" id="drop">
@@ -255,6 +293,19 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255, 255, 255
             <input id="link" type="url" inputmode="url" placeholder="https://" autocomplete="off">
             <small>A browser inside the box visits it. If the page asks for a login, the box types fake details, so nothing real is ever entered.</small>
           </div>
+          <div id="email-pane" class="email-in" hidden>
+            <div class="forward">
+              <p class="eyebrow">Don't Open It. Forward It.</p>
+              <p>In your inbox, right-click the email and choose <b>Forward as Attachment</b>, then send it to:</p>
+              <div class="addr"><code id="fwd-addr">check@your-burnbox-domain</code><button type="button" class="btn ghost" id="copy-addr">Copy</button></div>
+              <small id="fwd-note">The verdict appears in Past Runs within a minute.</small>
+            </div>
+            <label class="drop small" id="eml-drop">
+              <input type="file" id="eml-in" accept=".eml,message/rfc822" aria-label="Choose a saved email">
+              <b>Or drop the saved email (.eml)</b>
+              <small>The email is opened inside a box. Every link and attachment gets a box of its own.</small>
+            </label>
+          </div>
           <div id="chosen" class="chosen" hidden><i></i><div><b></b><span></span></div><button type="button" id="clear">Change</button></div>
           <div class="go-row">
             <button class="btn go" type="button" id="detonate" disabled>Detonate It</button>
@@ -265,6 +316,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255, 255, 255
       <aside class="side">
         <p class="eyebrow">Or Try a Test Sample</p>
         <div class="samples">
+          <button class="sample" type="button" data-sample="email" aria-pressed="false"><span class="ico">EML</span><b>invoice_overdue.eml</b><span>The whole "invoice overdue" email: sender, link and attachment</span></button>
           <button class="sample" type="button" data-sample="invoice" aria-pressed="false"><span class="ico">.PY</span><b>invoice_sample.py</b><span>An "invoice helper" from an overdue invoice email</span></button>
           <button class="sample" type="button" data-sample="phish" aria-pressed="false"><span class="ico">URL</span><b>phish_page</b><span>A login page asking you to sign in to see an invoice</span></button>
           <button class="sample" type="button" data-sample="benign" aria-pressed="false"><span class="ico">.PY</span><b>benign_sample.py</b><span>A harmless script that writes one note</span></button>
@@ -314,6 +366,30 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255, 255, 255
     </section>
   </main>
 
+  <!-- 2b. Live email run: the envelope, then one box per link and attachment -->
+  <main id="v-email" hidden>
+    <section class="run">
+      <div class="run-head">
+        <div><p class="eyebrow" id="e-id">Run</p><h2 id="e-name">email</h2></div>
+        <span class="status" id="e-status"><i></i><span>Opening the Email</span></span>
+      </div>
+      <div class="chamber dev">
+        <div class="steps" id="e-steps"></div>
+        <div class="env well" id="env">
+          <p class="eyebrow">Envelope</p>
+          <dl id="env-dl"><dt>From</dt><dd id="env-from">Reading inside the box</dd><dt>Subject</dt><dd id="env-subject"></dd></dl>
+        </div>
+        <div><p class="eyebrow" style="margin-bottom:10px">Red Flags</p><ul class="flags" id="flags"></ul></div>
+      </div>
+      <div class="trace-col">
+        <p class="eyebrow">Boxes</p>
+        <div class="kids" id="kids"><div class="kid dev pending"><svg viewBox="-60 -60 120 120"></svg><div><b>Email</b><span>Opening in a sealed box</span></div></div></div>
+        <p class="eyebrow">Live Record</p>
+        <div class="trace" id="e-trace" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
   <!-- 3. Verdict -->
   <main id="v-verdict" hidden>
     <section class="verdict">
@@ -322,6 +398,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255, 255, 255
         <div class="v-body">
           <p id="v-summary"></p>
           <div class="counts" id="v-counts"></div>
+          <div id="v-children" hidden><p class="eyebrow" style="margin-bottom:10px">Boxes Burned</p><div class="kids" id="v-kids"></div></div>
           <div><p class="eyebrow" style="margin-bottom:10px">What It Tried</p><ul class="tried" id="v-tried"></ul></div>
           <details class="full"><summary>Full Record</summary><div class="trace" id="v-trace"></div></details>
         </div>

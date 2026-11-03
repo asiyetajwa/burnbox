@@ -1,6 +1,36 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { factsFrom, floorOf, writeVerdict } from '../src/verdict.ts';
+import { emailFloor, factsFrom, floorOf, writeEmailVerdict, writeVerdict, type EmailFacts } from '../src/verdict.ts';
+
+const phishEmail: EmailFacts = {
+  subject: 'URGENT: Invoice #88213 is 14 days overdue', from: 'billing@northwind-payables.lab.test', fromName: 'Northwind Payables',
+  replyTo: ['payments@northwind-paybles.lab.test'], auth: { spf: 'fail', dkim: 'none', dmarc: 'fail' }, forwardedBy: null,
+  findings: [
+    { what: 'Sender not vouched for', detail: 'SPF, DKIM, DMARC did not pass', severity: 'high' },
+    { what: 'Replies go somewhere else', detail: 'a lookalike', severity: 'high' },
+  ],
+  children: [
+    { id: 'BBX-0001', kind: 'file', name: 'invoice_sample.py', level: 'malicious', reason: 'It read planted secrets.', summary: '' },
+    { id: 'BBX-0002', kind: 'link', name: 'invoices-portal.lab.test/view', level: 'malicious', reason: 'It sent the login elsewhere.', summary: '' },
+  ],
+  linksTotal: 1, attachmentsTotal: 1,
+};
+
+test('an email with a malicious attachment is malicious', () => {
+  assert.equal(emailFloor(phishEmail).level, 'malicious');
+});
+
+test('a spoofed email with only safe parts is still suspicious', () => {
+  const e = { ...phishEmail, children: phishEmail.children.map((c) => ({ ...c, level: 'safe' as const })) };
+  assert.equal(emailFloor(e).level, 'suspicious');
+});
+
+test('a clean email with safe parts is safe, and the summary counts every box', async () => {
+  const e = { ...phishEmail, findings: [{ what: 'Sender checks passed', detail: 'pass', severity: 'ok' as const }], children: [{ ...phishEmail.children[0], level: 'safe' as const }] };
+  assert.equal(emailFloor(e).level, 'safe');
+  const v = await writeEmailVerdict(phishEmail, () => {});
+  assert.match(v.summary, /3 sealed boxes/);
+});
 
 const invoiceReport = {
   executed: true,
