@@ -288,7 +288,7 @@
     $('#v-file').textContent = r.name;
     $('#v-summary').textContent = v.summary;
     const planted = r.kind === 'link' ? 1 : 3;
-    const reached = f.canaries.length + f.credentialPosts.length;
+    const reached = f.canaries.length;
     const denied = f.writesDenied.length + f.deletesDenied.length;
     $('#v-counts').innerHTML = `<div class="count"><b>${reached} of ${planted}</b><span>Canaries Touched</span></div><div class="count"><b>${f.egressTotal}</b><span>Egress Blocked</span></div><div class="count"><b>${denied}</b><span>Changes Denied</span></div>`;
     const col = { canary: 'var(--hot)', egress: 'var(--signal)', deny: 'var(--uv)', note: 'var(--sky)', ok: 'var(--sage-deep)' };

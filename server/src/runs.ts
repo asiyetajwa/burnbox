@@ -130,7 +130,7 @@ async function execute(r: Run, input: Buffer): Promise<void> {
     sha256: r.sha256,
     container: box.container,
     limits: box.limits,
-    canaries: { planted: r.kind === 'link' ? 1 : 3, reached: facts.canaries.length + facts.credentialPosts.length },
+    canaries: { planted: r.kind === 'link' ? 1 : 3, reached: facts.canaries.length },
     egressBlocked: facts.egressTotal,
     verdict: verdict.level,
     verdictBy: verdict.source === 'vultr' ? `Vultr Serverless Inference (${verdict.model ?? 'model'})` : 'Burn Box rules',

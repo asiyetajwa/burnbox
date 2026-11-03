@@ -59,7 +59,8 @@ export function factsFrom(kind: 'file' | 'link', name: string, report: Record<st
     name,
     executed: Boolean(r.executed),
     timedOut: Boolean(r.timed_out),
-    canaries: uniq(events.filter((e) => e.type === 'canary').map((e) => String(e.canary))),
+    // For a link the box types the fake login itself; it counts as reached only when the page sends it somewhere.
+    canaries: kind === 'link' ? (posts.length ? ['login'] : []) : uniq(events.filter((e) => e.type === 'canary').map((e) => String(e.canary))),
     egress: [...egressMap.values()],
     egressTotal: events.filter((e) => e.type === 'egress' && e.blocked !== false).length,
     lookups: uniq(events.filter((e) => e.type === 'lookup').map((e) => String(e.host))),
@@ -97,7 +98,7 @@ export function floorOf(f: Facts): { level: Level; reasons: string[] } {
 
 function triedFrom(f: Facts): Tried[] {
   const t: Tried[] = [];
-  for (const c of f.canaries) t.push({ what: `Read ${CANARY_NAMES[c] ?? c}`, outcome: 'Fake, logged', kind: 'canary' });
+  if (f.kind === 'file') for (const c of f.canaries) t.push({ what: `Read ${CANARY_NAMES[c] ?? c}`, outcome: 'Fake, logged', kind: 'canary' });
   for (const p of f.credentialPosts) t.push({ what: `Send typed login details to ${p.to}`, outcome: 'Fake login, traced', kind: 'canary' });
   const names = f.lookups.length ? f.lookups.join(', ') : '';
   const external = f.egress.filter((e) => e.port !== 53);
@@ -118,7 +119,7 @@ function stubSummary(f: Facts, level: Level): string {
   const subject = f.kind === 'link' ? 'This link' : 'This file';
   const parts: string[] = [];
   if (f.credentialPosts.length) parts.push(`opens a sign-in page that sent the details the box typed to ${f.credentialPosts[0].to}`);
-  if (f.canaries.length) { const c = f.canaries.map((x) => CANARY_NAMES[x] ?? x); parts.push(`went looking for ${c.length > 1 ? `${c.slice(0, -1).join(', ')} and ${c[c.length - 1]}` : c[0]}`); }
+  if (f.kind === 'file' && f.canaries.length) { const c = f.canaries.map((x) => CANARY_NAMES[x] ?? x); parts.push(`went looking for ${c.length > 1 ? `${c.slice(0, -1).join(', ')} and ${c[c.length - 1]}` : c[0]}`); }
   if (f.egressTotal || f.lookups.length) parts.push(`tried to reach ${f.lookups[0] ?? f.egress.find((e) => e.port !== 53)?.host ?? 'the internet'}`);
   if (f.writesDenied.some((p) => p.startsWith('/etc/'))) parts.push('tried to install itself to run again later');
   if (f.deletesDenied.length) parts.push('tried to delete files outside its folder');

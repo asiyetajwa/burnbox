@@ -62,7 +62,7 @@ function publicRun(r: Run): Record<string, unknown> {
 }
 
 function summary(r: Run): Record<string, unknown> {
-  return { id: r.id, kind: r.kind, name: r.name, status: r.status, createdAt: r.createdAt, verdict: r.verdict?.level, canaries: r.facts ? r.facts.canaries.length + r.facts.credentialPosts.length : 0, canariesPlanted: r.kind === 'link' ? 1 : 3, egress: r.facts?.egressTotal ?? 0, destroyedAt: r.box?.destroyedAt };
+  return { id: r.id, kind: r.kind, name: r.name, status: r.status, createdAt: r.createdAt, verdict: r.verdict?.level, canaries: r.facts ? r.facts.canaries.length : 0, canariesPlanted: r.kind === 'link' ? 1 : 3, egress: r.facts?.egressTotal ?? 0, destroyedAt: r.box?.destroyedAt };
 }
 
 const validUrl = (s: string): boolean => {
