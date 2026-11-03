@@ -183,10 +183,10 @@ export const SplitScene: React.FC<{ duration: number }> = ({ duration }) => (
 export const AttachmentScene: React.FC<{ duration: number }> = ({ duration }) => (
   <AbsoluteFill>
     <Footage clip="file" from={Math.max(0, mk('file', 'detonate') - 0.3)} keys={[
-      { f: 0, px: 960, py: 540, z: 1.05 },
-      { f: 45, px: 520, py: 560, z: 1.4 },
-      { f: Math.round(duration * 0.55), px: 640, py: 600, z: 1.3 },
-      { f: Math.max(60, duration - 10), px: 1280, py: 520, z: 1.3 },
+      { f: 0, px: 960, py: 560, z: 1.05 },
+      { f: 45, px: 560, py: 690, z: 1.22 },
+      { f: Math.round(duration * 0.55), px: 600, py: 700, z: 1.22 },
+      { f: Math.max(60, duration - 10), px: 1200, py: 560, z: 1.25 },
     ]} />
     <Vignette />
     <Caption step="04" text="The attachment's box: fake secrets, a wall" />
