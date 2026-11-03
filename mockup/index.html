@@ -1,7 +1,7 @@
 <title>Burn Box</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: app shell with a top bar; three views (new run, live run, verdict) plus past runs. The glass box is the hero of the run view. */
 :root {
@@ -10,8 +10,8 @@
   --sage: #9bb0a6; --sage-deep: #4f7a6d; --mint: #c4d8d2; --blush: #f2bfd2; --butter: #f2c75c; --clay: #cfab95;
   --signal: #e92b0c; --hot: #e8336f; --burn: #ff7a2f; --uv: #6f3fa0; --sky: #3f8fd2;
   --glass-a: .38; --wall: #9fb8b0;
-  --display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
-  --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   --r: 12px; --r-l: 18px;
 }
@@ -373,7 +373,7 @@ tbody tr { cursor: pointer; } tbody tr:hover td { background: var(--card); }
     el('path', { id, d: 'M-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0' }, d);
     const t = el('text', { fill: '#e8336f', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, 'font-weight': 600, 'letter-spacing': 2.2 }, svg);
     el('textPath', { href: `#${id}` }, t).textContent = 'DESTROYED · SIGNED · NO SURVIVORS · ';
-    const b = el('text', { 'text-anchor': 'middle', y: 9, fill: '#e8336f', 'font-family': 'Bricolage Grotesque, Arial Narrow, sans-serif', 'font-size': 24, 'font-weight': 800 }, svg);
+    const b = el('text', { 'text-anchor': 'middle', y: 9, fill: '#e8336f', 'font-family': 'Archivo, Arial Narrow, sans-serif', 'font-stretch': '75%', 'font-size': 24, 'font-weight': 800 }, svg);
     b.textContent = 'BURNED';
   }
   stamp($('#stamp')); stamp($('#stamp2'));

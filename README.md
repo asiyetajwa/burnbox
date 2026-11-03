@@ -81,6 +81,10 @@ All self-written; there is no real malware here and never will be.
 
 `docs/demo/invoice-overdue-email.html` is the demo "invoice overdue" email for the video.
 
+## Design
+
+Dark machined hardware: graphite device shells, inset wells, one warm amber fill for progress and the main action, and the sealed box drawn as a knurled dial. Type is Geist and Geist Mono. Never use Bricolage Grotesque or the Instrument family (Instrument Sans, Instrument Serif).
+
 ## API
 
 - `POST /api/runs` with a file body (`?name=`), or JSON `{"sample": "invoice" | "phish" | "benign"}` or `{"url": "https://..."}`

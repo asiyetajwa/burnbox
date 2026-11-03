@@ -4,78 +4,103 @@
   const NS = 'http://www.w3.org/2000/svg';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
-  const P = (x, y, z, s) => [(x - y) * 0.866 * s, (x + y) * 0.5 * s - z * s];
-  const poly = (pts) => pts.map((p) => p.join(',')).join(' ');
-  const shade = (hex, f) => { const n = parseInt(hex.slice(1), 16); const ch = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(f > 0 ? v + (255 - v) * f : v * (1 + f))); return `rgb(${ch.join(',')})`; };
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const AMBER_A = '#ffe383', AMBER_B = '#f59a3a', HOT = '#ff6b3d';
+  const polar = (r, a) => [Math.cos(a) * r, Math.sin(a) * r];
+  function grad(svg, id, stops, attrs = {}) {
+    const d = svg.querySelector('defs') ?? el('defs', {}, svg);
+    const g = el(attrs.linear ? 'linearGradient' : 'radialGradient', { id, ...(attrs.linear ? { x1: 0, x2: 1, y1: 0, y2: 0 } : { cx: attrs.cx ?? '50%', cy: attrs.cy ?? '38%', r: attrs.r ?? '65%' }) }, d);
+    stops.forEach(([o, c]) => el('stop', { offset: o, 'stop-color': c }, g));
+  }
 
-  // Logo and the empty-frame drop icon.
+  // Logo: a small knurled dial with a warm core. The drop icon is an empty dial.
   (() => {
-    const g = $('#logo'), s = 48, c = '#9bb0a6';
-    el('polygon', { points: poly([P(-.5, -.5, .5, s), P(.5, -.5, .5, s), P(.5, .5, .5, s), P(-.5, .5, .5, s)]), fill: shade(c, .28) }, g);
-    el('polygon', { points: poly([P(-.5, .5, -.5, s), P(.5, .5, -.5, s), P(.5, .5, .5, s), P(-.5, .5, .5, s)]), fill: c }, g);
-    el('polygon', { points: poly([P(.5, -.5, -.5, s), P(.5, .5, -.5, s), P(.5, .5, .5, s), P(.5, -.5, .5, s)]), fill: shade(c, -.16) }, g);
-    const [cx, cy] = P(.5, 0, 0, s);
-    el('ellipse', { rx: s * .26, ry: s * .26, fill: '#e8336f', transform: `matrix(-0.866,0.5,0,-1,${cx},${cy})` }, g);
+    const g = $('#logo'); const svg = g.ownerSVGElement;
+    grad(svg, 'lg-core', [['0', AMBER_A], ['1', AMBER_B]]);
+    grad(svg, 'lg-body', [['0', '#303033'], ['1', '#151516']]);
+    el('circle', { r: 46, fill: 'url(#lg-body)', stroke: 'rgba(255,255,255,.09)', 'stroke-width': 1.5 }, g);
+    for (let i = 0; i < 40; i++) { const a = (i / 40) * Math.PI * 2; const [x1, y1] = polar(35, a), [x2, y2] = polar(44, a); el('line', { x1, y1, x2, y2, stroke: '#0c0c0d', 'stroke-width': 2.2 }, g); }
+    el('circle', { r: 27, fill: '#141415', stroke: 'rgba(255,255,255,.06)' }, g);
+    el('circle', { r: 12, fill: 'url(#lg-core)' }, g);
     const o = $('#open-cube');
-    const st = { fill: 'none', stroke: 'currentColor', 'stroke-width': 3.5, 'stroke-linejoin': 'round', opacity: .5 };
-    el('polygon', { points: poly([P(-.5, -.5, .5, s), P(.5, -.5, .5, s), P(.5, -.5, -.5, s), P(.5, .5, -.5, s), P(-.5, .5, -.5, s), P(-.5, .5, .5, s)]), ...st }, o);
-    el('polyline', { points: poly([P(-.5, .5, .5, s), P(.5, .5, .5, s), P(.5, -.5, .5, s)]), ...st }, o);
-    el('polyline', { points: poly([P(.5, .5, .5, s), P(.5, .5, -.5, s)]), ...st }, o);
+    el('circle', { r: 40, fill: 'none', stroke: 'currentColor', 'stroke-width': 3, opacity: .45 }, o);
+    for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; const [x1, y1] = polar(44, a), [x2, y2] = polar(48, a); el('line', { x1, y1, x2, y2, stroke: 'currentColor', 'stroke-width': 2, opacity: .3 }, o); }
+    el('path', { d: 'M0 -18 V14 M-12 3 L0 15 L12 3', fill: 'none', stroke: 'currentColor', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .8 }, o);
   })();
 
   function stamp(svg) {
-    el('circle', { r: 54, fill: 'rgba(251,250,247,.85)', stroke: '#e8336f', 'stroke-width': 4 }, svg);
-    el('circle', { r: 38, fill: 'none', stroke: '#e8336f', 'stroke-width': 2 }, svg);
+    el('circle', { r: 54, fill: 'rgba(13,13,14,.9)', stroke: AMBER_B, 'stroke-width': 3 }, svg);
+    el('circle', { r: 38, fill: 'none', stroke: AMBER_B, 'stroke-width': 1.5, opacity: .7 }, svg);
     const id = `a-${svg.id}`; const d = el('defs', {}, svg);
     el('path', { id, d: 'M-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0' }, d);
-    const t = el('text', { fill: '#e8336f', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 11, 'font-weight': 600, 'letter-spacing': 2.2 }, svg);
+    const t = el('text', { fill: AMBER_B, 'font-family': 'Geist Mono, monospace', 'font-size': 10.5, 'font-weight': 500, 'letter-spacing': 2.2 }, svg);
     el('textPath', { href: `#${id}` }, t).textContent = 'DESTROYED · SIGNED · NO SURVIVORS · ';
-    const b = el('text', { 'text-anchor': 'middle', y: 9, fill: '#e8336f', 'font-family': 'Bricolage Grotesque, Arial Narrow, sans-serif', 'font-size': 24, 'font-weight': 800 }, svg);
-    b.textContent = 'BURNED';
+    const b = el('text', { 'text-anchor': 'middle', y: 8, fill: AMBER_A, 'font-family': 'Geist, sans-serif', 'font-size': 21, 'font-weight': 600, 'letter-spacing': -.5 }, svg);
+    b.textContent = 'Burned';
   }
   stamp($('#stamp')); stamp($('#stamp2'));
 
-  // The glass box.
+  // The sealed box, drawn as a dial. The outer ticks light up as the run moves through its steps, the knurled
+  // ring turns while the sample runs, the core is the sample, and every blocked escape strikes the wall in red.
   const box = $('#box');
-  const S = 150;
-  const defs = el('defs', {}, box);
-  const rg = el('radialGradient', { id: 'chrome', cx: '34%', cy: '30%', r: '75%' }, defs);
-  [['0', '#fff'], ['.12', '#eef0f3'], ['.45', '#a9afb6'], ['.72', '#5c6269'], ['.92', '#c9cdd2']].forEach(([o, c]) => el('stop', { offset: o, 'stop-color': c }, rg));
-  el('ellipse', { cx: 0, cy: 118, rx: 170, ry: 34, fill: '#000', opacity: .07 }, box);
+  grad(box, 'd-body', [['0', '#2e2e31'], ['.7', '#1b1b1d'], ['1', '#141415']]);
+  grad(box, 'd-face', [['0', '#252527'], ['1', '#18181a']], { cy: '30%', r: '80%' });
+  grad(box, 'd-core', [['0', '#6a6a6e'], ['.45', '#2e2e31'], ['1', '#121213']], { cx: '40%', cy: '32%' });
+  grad(box, 'd-hot', [['0', AMBER_A], ['1', AMBER_B]]);
+  const glow = el('filter', { id: 'd-glow', x: '-50%', y: '-50%', width: '200%', height: '200%' }, box.querySelector('defs'));
+  el('feGaussianBlur', { stdDeviation: 4, result: 'b' }, glow);
+  const merge = el('feMerge', {}, glow); el('feMergeNode', { in: 'b' }, merge); el('feMergeNode', { in: 'SourceGraphic' }, merge);
+  const shadowF = el('filter', { id: 'd-shadow', x: '-30%', y: '-30%', width: '160%', height: '160%' }, box.querySelector('defs'));
+  el('feGaussianBlur', { stdDeviation: 14 }, shadowF);
+
   const boxG = el('g', {}, box);
-  const face = (pts, fill, op) => el('polygon', { points: poly(pts.map(([x, y, z]) => P(x, y, z, S))), fill, 'fill-opacity': op, stroke: '#ffffff', 'stroke-opacity': .7, 'stroke-width': 1.5 }, boxG);
-  face([[-.5, -.5, -.5], [.5, -.5, -.5], [.5, .5, -.5], [-.5, .5, -.5]], '#b9c9c3', .9);
-  face([[-.5, -.5, -.5], [-.5, .5, -.5], [-.5, .5, .5], [-.5, -.5, .5]], '#c4d8d2', .55);
-  face([[-.5, -.5, -.5], [.5, -.5, -.5], [.5, -.5, .5], [-.5, -.5, .5]], '#d3e2dd', .55);
+  el('circle', { cy: 14, r: 128, fill: '#000', opacity: .75, filter: 'url(#d-shadow)' }, boxG);
+  const ticks = [];
+  const TICKS = 72;
+  for (let i = 0; i < TICKS; i++) {
+    const a = -Math.PI / 2 + (i / TICKS) * Math.PI * 2;
+    const [x1, y1] = polar(134, a), [x2, y2] = polar(144, a);
+    ticks.push(el('line', { x1, y1, x2, y2, stroke: '#2a2a2c', 'stroke-width': 3, 'stroke-linecap': 'round' }, boxG));
+  }
+  const knurl = el('g', { class: 'knurl' }, boxG);
+  el('circle', { r: 122, fill: 'url(#d-body)', stroke: 'rgba(255,255,255,.07)', 'stroke-width': 1.2 }, knurl);
+  for (let i = 0; i < 110; i++) {
+    const a = (i / 110) * Math.PI * 2;
+    const [x1, y1] = polar(106, a), [x2, y2] = polar(121, a);
+    el('line', { x1, y1, x2, y2, stroke: i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.65)', 'stroke-width': 2 }, knurl);
+  }
+  el('circle', { r: 102, fill: 'url(#d-face)', stroke: 'rgba(255,255,255,.06)', 'stroke-width': 1.2 }, boxG);
+  el('circle', { r: 58, fill: '#0e0e0f', stroke: 'rgba(0,0,0,.9)', 'stroke-width': 3 }, boxG);
+  el('circle', { r: 60, fill: 'none', stroke: 'rgba(255,255,255,.05)', 'stroke-width': 1 }, boxG);
   const sample = el('g', {}, boxG);
-  const [sx, sy] = P(0, 0, -.5, S);
-  el('ellipse', { cx: sx, cy: sy + 2, rx: 40, ry: 12, fill: '#000', opacity: .12 }, sample);
-  const ball = el('circle', { cx: sx, cy: sy - 40, r: 42, fill: 'url(#chrome)' }, sample);
-  const fronts = [
-    face([[-.5, .5, -.5], [.5, .5, -.5], [.5, .5, .5], [-.5, .5, .5]], '#c4d8d2', .32),
-    face([[.5, -.5, -.5], [.5, .5, -.5], [.5, .5, .5], [.5, -.5, .5]], '#b7ccc6', .32),
-    face([[-.5, -.5, .5], [.5, -.5, .5], [.5, .5, .5], [-.5, .5, .5]], '#e3eeea', .42),
-  ];
+  const ball = el('circle', { r: 34, fill: 'url(#d-core)', stroke: 'rgba(255,255,255,.1)', 'stroke-width': 1 }, sample);
   const sparks = el('g', {}, box);
+
+  function setProgress(frac) {
+    const lit = Math.round(frac * TICKS);
+    ticks.forEach((t, i) => {
+      t.setAttribute('stroke', i < lit ? (i / TICKS < .5 ? AMBER_A : AMBER_B) : '#2a2a2c');
+      if (i < lit) t.setAttribute('filter', 'url(#d-glow)'); else t.removeAttribute('filter');
+    });
+  }
   function spark() {
     if (reduced) return;
     const a = Math.random() * Math.PI * 2;
-    const [x0, y0] = [sx + Math.cos(a) * 30, sy - 40 + Math.sin(a) * 20];
-    const [x1, y1] = [sx + Math.cos(a) * 112, sy - 40 + Math.sin(a) * 72];
-    const l = el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: '#e92b0c', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-dasharray': '6 8' }, sparks);
-    const hit = el('circle', { cx: x1, cy: y1, r: 7, fill: 'none', stroke: '#e92b0c', 'stroke-width': 2.5 }, sparks);
-    fronts.forEach((f) => f.setAttribute('stroke', '#e92b0c'));
-    setTimeout(() => { l.remove(); hit.remove(); fronts.forEach((f) => f.setAttribute('stroke', '#ffffff')); }, 420);
+    const [x0, y0] = polar(38, a), [x1, y1] = polar(100, a);
+    const l = el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: HOT, 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-dasharray': '5 7', filter: 'url(#d-glow)' }, sparks);
+    const [ax, ay] = polar(102, a - .18), [bx, by] = polar(102, a + .18);
+    const hit = el('path', { d: `M${ax},${ay} A102,102 0 0 1 ${bx},${by}`, fill: 'none', stroke: HOT, 'stroke-width': 4, 'stroke-linecap': 'round', filter: 'url(#d-glow)' }, sparks);
+    setTimeout(() => { l.remove(); hit.remove(); }, 420);
   }
   function resetBox(kind) {
-    boxG.style.transition = 'none'; boxG.style.opacity = '1'; boxG.style.transform = 'none';
-    ball.setAttribute('fill', 'url(#chrome)'); sample.style.opacity = kind === 'link' ? '0' : '1';
+    boxG.style.transition = 'none'; boxG.style.opacity = '1';
+    ball.setAttribute('fill', 'url(#d-core)'); sample.style.opacity = kind === 'link' ? '0' : '1';
+    setProgress(0); box.classList.add('spinning');
     $('#stamp').classList.remove('on'); $('#shot').classList.remove('on');
   }
   function burnBox() {
-    boxG.style.transition = 'opacity .8s ease, transform .8s ease'; boxG.style.transformOrigin = '0 0';
-    boxG.style.opacity = '.12'; boxG.style.transform = 'scale(.92)';
+    box.classList.remove('spinning');
+    boxG.style.transition = 'opacity .9s ease'; boxG.style.opacity = '.18';
     $('#shot').classList.remove('on'); $('#stamp').classList.add('on');
   }
 
@@ -92,8 +117,8 @@
   // Health: is the box ready?
   api('/api/health').then((h) => {
     const ok = h.sandbox.docker && h.sandbox.box;
-    $('#where').innerHTML = `<i style="background:${ok ? 'var(--sage-deep)' : 'var(--signal)'}"></i>Vultr · ${ok ? 'Box Ready' : 'Box Offline'}${h.inference === 'vultr' ? ' · Vultr Inference' : ''}`;
-  }).catch(() => { $('#where').innerHTML = '<i style="background:var(--signal)"></i>Server Unreachable'; });
+    $('#where').innerHTML = `<i style="${ok ? '' : 'background:var(--hot);box-shadow:0 0 10px var(--hot)'}"></i>Vultr · ${ok ? 'Box Ready' : 'Box Offline'}${h.inference === 'vultr' ? ' · Vultr Inference' : ''}`;
+  }).catch(() => { $('#where').innerHTML = '<i style="background:var(--hot);box-shadow:0 0 10px var(--hot)"></i>Server Unreachable'; });
 
   // Views.
   function show(v) {
@@ -122,7 +147,7 @@
   $('#m-link').addEventListener('click', () => { reset(); setMode('link'); $('#link').focus(); });
   function showChosen(name, sub, color) {
     const c = $('#chosen'); c.hidden = false;
-    c.querySelector('i').style.background = color; c.querySelector('b').textContent = name; c.querySelector('span').textContent = sub;
+    c.querySelector('b').textContent = name; c.querySelector('span').textContent = sub;
     $('#file-pane').hidden = true; $('#link-pane').hidden = true;
     $('#detonate').disabled = false;
   }
@@ -163,7 +188,17 @@
 
   // Run view.
   const STEPS = ['Seal', 'Plant Canaries', 'Detonate', 'Record', 'Burn', 'Verdict'];
-  const setStep = (i) => { $('#steps').innerHTML = STEPS.map((s, k) => `<span class="step ${k < i ? 'ok' : k === i ? 'now' : ''}">${s}</span>`).join(''); };
+  // The run's progress is the amber track; the dial's outer ticks follow it.
+  const setStep = (i) => {
+    const host = $('#steps');
+    if (!host.querySelector('.track')) host.innerHTML = '<div class="track"><i></i><b></b></div><div class="steps-label"><span></span><span></span></div>';
+    const pct = Math.round(((i + 1) / STEPS.length) * 100);
+    host.querySelector('.track i').style.width = `${pct}%`;
+    const b = host.querySelector('.track b'); b.textContent = `${pct}%`; b.style.color = pct >= 88 ? '#2a1604' : '';
+    const [now, of] = host.querySelectorAll('.steps-label span');
+    now.textContent = STEPS[i]; of.textContent = `Step ${i + 1} of ${STEPS.length}`;
+    setProgress((i + 1) / STEPS.length);
+  };
   const CANARY_LABEL = { cloud_key: 'Cloud Key', wallet: 'Wallet', password: 'Password', login: 'Fake Login' };
   let counts, queue, draining, current;
   const hhmmss = (iso) => (iso ? new Date(iso).toISOString().slice(11, 19) : '');
@@ -241,7 +276,8 @@
       case 'canary': {
         const c = $(`#cn-${e.canary}`);
         if (c) { c.classList.add('hit'); c.querySelector('span').textContent = `Reached ${e.ts?.slice(0, 8) ?? ''}`; }
-        ball.setAttribute('fill', '#e8336f'); setTimeout(() => ball.setAttribute('fill', 'url(#chrome)'), 500);
+        ball.setAttribute('fill', 'url(#d-hot)'); ball.setAttribute('filter', 'url(#d-glow)');
+        setTimeout(() => { ball.setAttribute('fill', 'url(#d-core)'); ball.removeAttribute('filter'); }, 520);
         if (e.canary !== 'login') line('canary', 'read', e.path ?? '', e.at); return 450;
       }
       case 'egress': bump('egress'); spark(); line('egress', e.port === 53 ? 'dns' : 'connect', `${e.host}:${e.port}  ${e.blocked ? 'BLOCKED' : 'ALLOWED (lab)'}`, e.at); return 200;
@@ -292,7 +328,7 @@
     const reached = f.canaries.length;
     const denied = f.writesDenied.length + f.deletesDenied.length;
     $('#v-counts').innerHTML = `<div class="count"><b>${reached} of ${planted}</b><span>Canaries Touched</span></div><div class="count"><b>${f.egressTotal}</b><span>Egress Blocked</span></div><div class="count"><b>${denied}</b><span>Changes Denied</span></div>`;
-    const col = { canary: 'var(--hot)', egress: 'var(--signal)', deny: 'var(--uv)', note: 'var(--sky)', ok: 'var(--sage-deep)' };
+    const col = { canary: 'linear-gradient(135deg, var(--amber-a), var(--amber-b))', egress: 'var(--hot)', deny: '#c4b8ff', note: '#98c2e6', ok: 'var(--safe)' };
     $('#v-tried').innerHTML = v.tried.map((t, i) => `<li><i style="background:${col[t.kind]}">${i + 1}</i><span>${esc(t.what)}</span><em>${esc(t.outcome)}</em></li>`).join('');
     const kindOf = { stage: 'box', exec: 'exec', canary: 'canary', egress: 'egress', lookup: 'egress', write_denied: 'deny', delete_denied: 'deny', write: 'ok', stdout: 'note', post: 'canary', page: 'note', note: 'note' };
     $('#v-trace').innerHTML = r.events.filter((e) => kindOf[e.type]).map((e) => {
