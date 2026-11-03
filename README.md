@@ -19,3 +19,7 @@ Brand kit first: `docs/brand/`. The sandbox runner, web app and Vultr deployment
 ## License
 
 MIT
+
+## Mock-up
+
+`mockup/index.html` is the clickable app mock-up for approval: new run (file, link or test sample), the live run with the glass box, canaries and record, then the verdict and the signed destruction receipt.
