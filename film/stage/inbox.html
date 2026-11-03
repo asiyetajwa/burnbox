@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Inbox</title>
+<!-- Film prop: a generic mail client (no real product), used to show forwarding an email without opening it. -->
+<style>
+@font-face { font-family: Geist; src: url(../public/fonts/geist.woff2) format("woff2"); font-weight: 100 900; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 400 15px/1.4 Geist, system-ui, sans-serif; color: #1d1f23; background: #eef0f3; height: 100vh; overflow: hidden; }
+.app { display: grid; grid-template-columns: 230px 560px 1fr; height: 100vh; }
+.side { background: #f7f8fa; border-right: 1px solid #e3e6ea; padding: 22px 16px; display: grid; align-content: start; gap: 4px; }
+.side .logo { font-weight: 600; font-size: 18px; margin: 0 8px 20px; display: flex; gap: 10px; align-items: center; }
+.side .logo i { width: 26px; height: 26px; border-radius: 7px; background: #4a6cf7; display: block; }
+.side a { padding: 9px 12px; border-radius: 8px; color: #3a3f47; text-decoration: none; display: flex; justify-content: space-between; }
+.side a.on { background: #e4e9ff; color: #2b46c7; font-weight: 600; }
+.list { background: #fff; border-right: 1px solid #e3e6ea; overflow: hidden; }
+.list h2 { font-size: 20px; font-weight: 600; margin: 0; padding: 22px 22px 14px; }
+.row { display: grid; grid-template-columns: 40px 1fr auto; gap: 4px 12px; padding: 14px 22px; border-top: 1px solid #f0f2f5; cursor: default; position: relative; }
+.row .av { grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; }
+.row b { font-weight: 600; } .row time { color: #7a808a; font-size: 13px; }
+.row .sub { grid-column: 2 / span 2; color: #555b64; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row.unread b, .row.unread .sub { color: #111; font-weight: 600; }
+.row.hot { background: #fff7f2; }
+.row.sel { background: #e9eefc; }
+.row .clip { color: #7a808a; font-size: 13px; margin-left: 6px; }
+.row .tag { display: none; position: absolute; right: 22px; bottom: 12px; font-size: 12px; font-weight: 600; color: #b5560b; background: #ffe6cc; padding: 3px 8px; border-radius: 999px; }
+.row.sent .tag { display: block; }
+.read { display: grid; place-items: center; color: #8a9099; font-size: 15px; text-align: center; }
+.read svg { display: block; margin: 0 auto 14px; opacity: .5; }
+.menu { position: fixed; display: none; width: 240px; background: #fff; border-radius: 10px; box-shadow: 0 14px 40px rgba(20, 30, 50, .22), 0 0 0 1px rgba(20, 30, 50, .08); padding: 6px; z-index: 10; }
+.menu.on { display: block; animation: pop .14s ease-out; }
+.menu div { padding: 9px 12px; border-radius: 6px; }
+.menu div.hl { background: #4a6cf7; color: #fff; }
+.menu hr { border: 0; border-top: 1px solid #eceef1; margin: 5px 0; }
+@keyframes pop { from { opacity: 0; transform: scale(.96); } }
+.compose { position: fixed; right: 40px; bottom: -520px; width: 620px; background: #fff; border-radius: 14px 14px 0 0; box-shadow: 0 -10px 50px rgba(20, 30, 50, .25); transition: bottom .45s cubic-bezier(.2, .8, .2, 1); z-index: 20; }
+.compose.on { bottom: 0; }
+.compose .bar { background: #2b2f36; color: #fff; padding: 12px 18px; border-radius: 14px 14px 0 0; font-weight: 600; }
+.compose .f { padding: 12px 18px; border-bottom: 1px solid #eef0f3; display: flex; gap: 12px; align-items: center; }
+.compose .f span { color: #7a808a; width: 60px; }
+.compose .f b { font-weight: 500; }
+.caret { display: inline-block; width: 2px; height: 18px; background: #4a6cf7; vertical-align: -3px; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.compose .body { padding: 16px 18px; color: #555b64; min-height: 70px; }
+.att { display: inline-flex; gap: 10px; align-items: center; margin: 0 18px 16px; padding: 10px 14px; border: 1px solid #e3e6ea; border-radius: 10px; font-size: 14px; }
+.att i { width: 26px; height: 32px; border-radius: 4px; background: #f59a3a; display: block; }
+.compose .foot { padding: 12px 18px 18px; display: flex; gap: 10px; }
+.send { background: #4a6cf7; color: #fff; border: 0; border-radius: 999px; padding: 11px 26px; font: 600 15px Geist, sans-serif; }
+.send.press { transform: scale(.95); background: #3553d6; }
+.toast { position: fixed; left: 50%; bottom: 36px; transform: translate(-50%, 20px); opacity: 0; background: #1d1f23; color: #fff; padding: 13px 20px; border-radius: 999px; transition: all .3s; z-index: 30; font-weight: 500; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style></head>
+<body>
+<div class="app">
+  <nav class="side">
+    <div class="logo"><i></i>Mail</div>
+    <a class="on" href="#">Inbox <span>4</span></a><a href="#">Starred</a><a href="#">Sent</a><a href="#">Drafts</a><a href="#">Archive</a><a href="#">Junk</a>
+  </nav>
+  <section class="list">
+    <h2>Inbox</h2>
+    <div class="row unread hot" id="phish">
+      <div class="av" style="background:#c2410c">N</div><b>Northwind Payables<span class="clip">📎</span></b><time>8:41 AM</time>
+      <div class="sub">URGENT: Invoice #88213 is 14 days overdue</div>
+      <div class="tag">Sent to Burn Box</div>
+    </div>
+    <div class="row unread"><div class="av" style="background:#0f766e">D</div><b>Dana from Accounting</b><time>8:12 AM</time><div class="sub">Q3 budget, second draft attached</div></div>
+    <div class="row"><div class="av" style="background:#6d28d9">S</div><b>Sam Okafor</b><time>Yesterday</time><div class="sub">Lunch on Thursday?</div></div>
+    <div class="row"><div class="av" style="background:#475569">T</div><b>Team Calendar</b><time>Yesterday</time><div class="sub">Reminder: board meeting at 10:00</div></div>
+    <div class="row"><div class="av" style="background:#b45309">P</div><b>Priya Shah</b><time>Mon</time><div class="sub">Notes from the client call</div></div>
+  </section>
+  <section class="read"><div><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#8a9099" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>No email open</div></section>
+</div>
+<div class="menu" id="menu">
+  <div>Open</div><div>Reply</div><div>Forward</div><div id="fwd-att">Forward as Attachment</div><hr><div>Mark as Junk</div><div>Delete</div>
+</div>
+<div class="compose" id="compose">
+  <div class="bar">Forward as Attachment</div>
+  <div class="f"><span>To</span><b id="to"></b><i class="caret" id="caret"></i></div>
+  <div class="f"><span>Subject</span><b>Fwd: URGENT: Invoice #88213 is 14 days overdue</b></div>
+  <div class="body">Is this real?</div>
+  <div class="att"><i></i>URGENT_ Invoice 88213.eml <span style="color:#7a808a">· 6 KB</span></div>
+  <div class="foot"><button class="send" id="send">Send</button></div>
+</div>
+<div class="toast" id="toast">Sent to check@burnbox.test</div>
+<script>
+// Driven by the film recorder: window.stage.* calls play each beat.
+window.stage = {
+  select() { document.getElementById('phish').classList.add('sel'); },
+  menu(x, y) { const m = document.getElementById('menu'); m.style.left = `${x}px`; m.style.top = `${y}px`; m.classList.add('on'); },
+  hover() { document.getElementById('fwd-att').classList.add('hl'); },
+  compose() { document.getElementById('menu').classList.remove('on'); document.getElementById('compose').classList.add('on'); },
+  async type(text) { const to = document.getElementById('to'); for (const ch of text) { to.textContent += ch; await new Promise((r) => setTimeout(r, 70)); } },
+  send() { document.getElementById('send').classList.add('press'); setTimeout(() => { document.getElementById('compose').classList.remove('on'); document.getElementById('toast').classList.add('on'); document.getElementById('phish').classList.add('sent'); }, 250); },
+};
+</script>
+</body></html>

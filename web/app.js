@@ -525,7 +525,10 @@
     try { const r = await api(`/api/runs/${tr.dataset.id}`); current = r; if (r.verdict) renderVerdict(r); else watch(r); } catch (err) { toast(err.message); }
   });
 
-  // A shared link to a run opens it directly.
-  const m = /^#(BBX-\d{4,})$/.exec(location.hash);
-  if (m) api(`/api/runs/${m[1]}`).then((r) => { current = r; if (r.verdict) renderVerdict(r); else watch(r); }).catch(() => {});
+  // Replay plays a finished run's recorded events back through the live view, in their real order.
+  $('#replay').addEventListener('click', () => { if (current) watch(current); });
+
+  // A shared link to a run opens it directly; #replay-BBX-0001 plays it back from the start.
+  const m = /^#(replay-)?(BBX-\d{4,})$/.exec(location.hash);
+  if (m) api(`/api/runs/${m[2]}`).then((r) => { current = r; if (r.verdict && !m[1]) renderVerdict(r); else watch(r); }).catch(() => {});
 })();

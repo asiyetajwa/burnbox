@@ -1,0 +1,35 @@
+{
+  "inbox": {
+    "row": 2.71,
+    "menu": 3.42,
+    "compose": 5.38,
+    "sent": 10.53,
+    "seconds": 11.43
+  },
+  "home": {
+    "email-tab": 2.29,
+    "seconds": 6.32
+  },
+  "email": {
+    "open": 0.23,
+    "flags": 1.53,
+    "split": 5.85,
+    "verdict": 13.2,
+    "scroll": 16.4,
+    "seconds": 20.23
+  },
+  "file": {
+    "detonate": 3.07,
+    "canary": 4.94,
+    "burned": 9.26,
+    "verdict": 10.07,
+    "seconds": 10.57
+  },
+  "link": {
+    "detonate": 2.97,
+    "page": 5.29,
+    "burned": 8.09,
+    "verdict": 9.39,
+    "seconds": 9.6
+  }
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Burn Box thumbnail</title>
+<!-- YouTube (16:9) and LabLab cover thumbnail. Screenshot with scripts/thumbnail.mjs. -->
+<style>
+@font-face { font-family: Geist; src: url(../public/fonts/geist.woff2) format("woff2"); font-weight: 100 900; }
+@font-face { font-family: Geist Mono; src: url(../public/fonts/geist-mono.woff2) format("woff2"); font-weight: 100 900; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0d0d0e; color: #ecebe7; font-family: Geist, sans-serif;
+  background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 232px 232px; }
+.wrap { position: absolute; inset: 0; display: grid; grid-template-columns: 1120px 1fr; align-items: center; padding: 0 110px; gap: 40px; }
+.words .tag { font: 500 30px Geist Mono, monospace; color: #6f6d69; letter-spacing: 3px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; }
+.words .tag i { width: 18px; height: 18px; border-radius: 50%; background: #f59a3a; box-shadow: 0 0 20px #f59a3a; }
+h1 { margin: 28px 0 0; font-size: 168px; line-height: .92; font-weight: 600; letter-spacing: -8px; }
+h1 span { color: #ffd36b; text-shadow: 0 0 60px rgba(245,154,58,.35); }
+.sub { margin-top: 34px; max-width: 820px; font-size: 44px; color: #a6a49f; font-weight: 300; letter-spacing: -1px; }
+.mail { position: absolute; right: 90px; top: 110px; padding: 24px 30px; white-space: nowrap; border-radius: 30px; background: linear-gradient(180deg, #242426, #1b1b1d); box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 30px 70px -20px #000; transform: rotate(-3deg); }
+.mail b { display: block; font-size: 32px; font-weight: 600; letter-spacing: -1px; }
+.mail span { font: 400 22px Geist Mono, monospace; color: #6f6d69; }
+.dials { position: absolute; right: 120px; bottom: 90px; display: flex; gap: 26px; align-items: flex-end; }
+</style></head>
+<body>
+<div class="wrap">
+  <div class="words">
+    <div class="tag"><i></i>Burn Box · Built on Vultr</div>
+    <h1>Don't open it.<br><span>Forward it.</span></h1>
+    <div class="sub">Every link and attachment gets its own box. Then the box burns.</div>
+  </div>
+</div>
+<div class="mail"><span>Northwind Payables · 8:41 AM</span><b>URGENT: Invoice #88213 overdue</b></div>
+<div class="dials" id="dials"></div>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+function dial(size, hot) {
+  const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', size); s.setAttribute('height', size); s.setAttribute('viewBox', '-160 -160 320 320');
+  let h = `<defs><radialGradient id="b${size}" cx="50%" cy="38%" r="65%"><stop offset="0" stop-color="#2e2e31"/><stop offset=".7" stop-color="#1b1b1d"/><stop offset="1" stop-color="#141415"/></radialGradient>
+  <radialGradient id="c${size}" cx="50%" cy="38%" r="65%"><stop offset="0" stop-color="${hot ? '#ffb08f' : '#ffe383'}"/><stop offset="1" stop-color="${hot ? '#ff6b3d' : '#f59a3a'}"/></radialGradient>
+  <filter id="g${size}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="x"/><feMerge><feMergeNode in="x"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  for (let i = 0; i < 72; i++) { const a = -Math.PI / 2 + i / 72 * Math.PI * 2; h += `<line x1="${Math.cos(a) * 134}" y1="${Math.sin(a) * 134}" x2="${Math.cos(a) * 146}" y2="${Math.sin(a) * 146}" stroke="${i < 36 ? '#ffe383' : '#f59a3a'}" stroke-width="3.5" stroke-linecap="round" filter="url(#g${size})"/>`; }
+  h += `<circle r="122" fill="url(#b${size})" stroke="rgba(255,255,255,.08)"/>`;
+  for (let i = 0; i < 110; i++) { const a = i / 110 * Math.PI * 2; h += `<line x1="${Math.cos(a) * 106}" y1="${Math.sin(a) * 106}" x2="${Math.cos(a) * 121}" y2="${Math.sin(a) * 121}" stroke="${i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.65)'}" stroke-width="2"/>`; }
+  h += `<circle r="102" fill="#1f1f21"/><circle r="58" fill="#0e0e0f"/><circle r="36" fill="url(#c${size})" filter="url(#g${size})"/>`;
+  s.innerHTML = h; return s;
+}
+const d = document.getElementById('dials');
+d.append(dial(210, true), dial(330, false), dial(210, true));
+</script>
+</body></html>

@@ -1,0 +1,58 @@
+{
+  "voiceId": "nPczCjzI2devNBz1zQrb",
+  "modelId": "eleven_multilingual_v2",
+  "music": "music/burnbox-bed.mp3",
+  "musicStart": 0,
+  "clips": [
+    {
+      "id": "hook",
+      "file": "voiceover/burnbox/hook.mp3",
+      "seconds": 8.359184
+    },
+    {
+      "id": "title",
+      "file": "voiceover/burnbox/title.mp3",
+      "seconds": 6.791837
+    },
+    {
+      "id": "inbox",
+      "file": "voiceover/burnbox/inbox.mp3",
+      "seconds": 7.497143
+    },
+    {
+      "id": "envelope",
+      "file": "voiceover/burnbox/envelope.mp3",
+      "seconds": 11.284898
+    },
+    {
+      "id": "split",
+      "file": "voiceover/burnbox/split.mp3",
+      "seconds": 7.000816
+    },
+    {
+      "id": "attachment",
+      "file": "voiceover/burnbox/attachment.mp3",
+      "seconds": 15.56898
+    },
+    {
+      "id": "link",
+      "file": "voiceover/burnbox/link.mp3",
+      "seconds": 8.228571
+    },
+    {
+      "id": "verdict",
+      "file": "voiceover/burnbox/verdict.mp3",
+      "seconds": 8.96
+    },
+    {
+      "id": "how",
+      "file": "voiceover/burnbox/how.mp3",
+      "seconds": 16.169796
+    },
+    {
+      "id": "outro",
+      "file": "voiceover/burnbox/outro.mp3",
+      "seconds": 3.213061
+    }
+  ]
+}
