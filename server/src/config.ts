@@ -15,6 +15,7 @@ export const config = {
   boxImage: env.BOX_IMAGE ?? 'burnbox-box:latest',
   browserImage: env.BROWSER_IMAGE ?? 'burnbox-browser:latest',
   labNetwork: env.LAB_NETWORK ?? 'burnbox-lab',
+  gateUrl: env.GATE_URL ?? '', // e.g. http://gate:3128 lets link boxes read real sites; empty keeps links lab-only
   runtime: env.SANDBOX_RUNTIME ?? '', // "runsc" for gVisor when installed on the host
   limits: {
     memory: env.BOX_MEMORY ?? '256m',

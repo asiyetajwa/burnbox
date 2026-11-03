@@ -45,7 +45,7 @@ export function factsFrom(kind: 'file' | 'link', name: string, report: Record<st
   const r = report ?? {};
   const events = (Array.isArray(r.events) ? r.events : []) as Ev[];
   const egressMap = new Map<string, { host: string; port: number; count: number; dns?: string }>();
-  for (const e of events.filter((x) => x.type === 'egress')) {
+  for (const e of events.filter((x) => x.type === 'egress' && x.blocked !== false)) {
     const key = `${String(e.host)}:${String(e.port)}`;
     const cur = egressMap.get(key) ?? { host: String(e.host), port: Number(e.port), count: 0 };
     cur.count += 1;
@@ -61,7 +61,7 @@ export function factsFrom(kind: 'file' | 'link', name: string, report: Record<st
     timedOut: Boolean(r.timed_out),
     canaries: uniq(events.filter((e) => e.type === 'canary').map((e) => String(e.canary))),
     egress: [...egressMap.values()],
-    egressTotal: events.filter((e) => e.type === 'egress').length,
+    egressTotal: events.filter((e) => e.type === 'egress' && e.blocked !== false).length,
     lookups: uniq(events.filter((e) => e.type === 'lookup').map((e) => String(e.host))),
     writesDenied: uniq(events.filter((e) => e.type === 'write_denied').map((e) => String(e.path))),
     deletesDenied: uniq(events.filter((e) => e.type === 'delete_denied').map((e) => String(e.path))),

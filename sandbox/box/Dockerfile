@@ -6,11 +6,11 @@ FROM ${BASE}
 
 # strace records every file, network and process call the sample makes.
 # Packages in debs/ are installed offline when present (for build machines without apt access).
-COPY debs/ /tmp/debs/
-RUN set -eux; \
+RUN --mount=type=bind,source=debs,target=/tmp/debs \
+    set -eux; \
     if ls /tmp/debs/*.deb >/dev/null 2>&1; then dpkg -i /tmp/debs/*.deb; \
     else apt-get update && apt-get install -y --no-install-recommends strace && rm -rf /var/lib/apt/lists/*; fi; \
-    rm -rf /tmp/debs; strace -V | head -1
+    strace -V | head -1
 
 RUN useradd --uid 1000 --create-home --home-dir /home/sandbox --shell /bin/sh sandbox
 

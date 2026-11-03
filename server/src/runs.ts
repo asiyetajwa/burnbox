@@ -51,7 +51,7 @@ function save(r: Run): void {
 
 function push(r: Run, e: BoxEvent): void {
   const ev = { ...e, at: new Date().toISOString() };
-  r.events.push(ev);
+  if (e.type !== 'screenshot') r.events.push(ev);
   for (const fn of listeners.get(r.id) ?? []) fn(ev);
 }
 
@@ -92,7 +92,10 @@ async function execute(r: Run, input: Buffer): Promise<void> {
   push(r, { type: 'stage', stage: 'starting' });
   const canaries = makeCanaries();
   const env: Record<string, string> = { BB_NAME: r.name, BB_CANARIES: JSON.stringify(canaries) };
-  if (r.kind === 'link') env.BB_URL = input.toString('utf8');
+  if (r.kind === 'link') {
+    env.BB_URL = input.toString('utf8');
+    if (config.gateUrl) env.BB_PROXY = config.gateUrl;
+  }
   let box: BoxResult;
   try {
     box = await detonate({ kind: r.kind, name: r.name, input: r.kind === 'link' ? Buffer.alloc(0) : input, env }, (e) => push(r, e));

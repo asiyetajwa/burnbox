@@ -195,7 +195,7 @@
     $('#r-name').textContent = run.name;
     const st = $('#r-status'); st.classList.remove('done'); st.querySelector('span').textContent = 'Detonating';
     $('#trace').innerHTML = '<span class="cursor"></span>';
-    $('#f-user').textContent = ''; $('#f-pass').textContent = '';
+    $('#shot .pg').innerHTML = '<b></b><div class="fld" id="f-user"></div><div class="fld" id="f-pass"></div><div class="sub">Sign In</div>'; $('#shot .pg').style.padding = '';
     resetBox(run.kind);
     const can = run.kind === 'link' ? ['login'] : ['cloud_key', 'wallet', 'password'];
     $('#canaries').style.gridTemplateColumns = `repeat(${can.length}, minmax(0, 1fr))`;
@@ -241,7 +241,7 @@
         const c = $(`#cn-${e.canary}`);
         if (c) { c.classList.add('hit'); c.querySelector('span').textContent = `Reached ${e.ts?.slice(0, 8) ?? ''}`; }
         ball.setAttribute('fill', '#e8336f'); setTimeout(() => ball.setAttribute('fill', 'url(#chrome)'), 500);
-        line('canary', e.canary === 'login' ? 'typed' : 'read', e.path ?? e.value ?? '', e.at); return 450;
+        if (e.canary !== 'login') line('canary', 'read', e.path ?? '', e.at); return 450;
       }
       case 'egress': bump('egress'); spark(); line('egress', e.port === 53 ? 'dns' : 'connect', `${e.host}:${e.port}  ${e.blocked ? 'BLOCKED' : 'ALLOWED (lab)'}`, e.at); return 200;
       case 'lookup': line('egress', 'lookup', `${e.host}  BLOCKED`, e.at); return 250;
@@ -253,8 +253,14 @@
       case 'page':
         $('#shot .url').textContent = e.url; $('#shot .pg b').textContent = e.title || 'Page';
         $('#shot').classList.add('on'); line('note', 'visit', e.url, e.at); return 600;
+      case 'screenshot': {
+        const img = document.createElement('img'); img.src = e.data; img.alt = 'What the page looked like inside the box';
+        img.style.cssText = 'display:block;width:100%;height:auto';
+        const pg = $('#shot .pg'); pg.replaceChildren(img); pg.style.padding = '0';
+        return 500;
+      }
       case 'form': line('note', 'page', `${e.fields} fields, sends to ${e.action}`, e.at); return 400;
-      case 'typed': $('#f-user').textContent = e.user ?? ''; $('#f-pass').textContent = '••••••••••'; return 400;
+      case 'typed': if ($('#f-user')) { $('#f-user').textContent = e.user ?? ''; $('#f-pass').textContent = '••••••••••'; } line('canary', 'typed', `${e.user} and a one-time password (fake)`, e.at); return 400;
       case 'post': line('canary', 'posted', `to ${e.to}${e.crossSite ? '  (not the page you saw)' : ''}`, e.at); return 450;
       case 'note': line('note', 'note', e.message, e.at); return 200;
       case 'error': $('#r-status span').textContent = 'Failed'; line('deny', 'error', e.message, e.at); toast(e.message); return 0;

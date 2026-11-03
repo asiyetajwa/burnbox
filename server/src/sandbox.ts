@@ -71,8 +71,8 @@ export async function detonate(spec: Spec, onEvent: (e: BoxEvent) => void): Prom
   const args = ['run', '-i', '--name', name, '--cidfile', cidfile, '--label', 'burnbox=1',
     '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--user', '1000:1000',
     '--tmpfs', '/work:rw,exec,nosuid,nodev,size=64m,mode=1777',
-    '--tmpfs', '/home/sandbox:rw,nosuid,nodev,size=8m,mode=1777',
-    '--tmpfs', '/tmp:rw,nosuid,nodev,size=64m,mode=1777',
+    '--tmpfs', `/home/sandbox:rw,nosuid,nodev,size=${spec.kind === 'link' ? '96m' : '8m'},mode=1777`,
+    '--tmpfs', `/tmp:rw,nosuid,nodev,size=${spec.kind === 'link' ? '160m' : '64m'},mode=1777`,
     '--pids-limit', String(limits.processes), '--memory', String(limits.memory), '--memory-swap', String(limits.memory),
     '--cpus', String(limits.cpus), '--ulimit', 'nofile=512:512', '--ulimit', 'fsize=33554432:33554432',
     '--log-driver', 'none'];
