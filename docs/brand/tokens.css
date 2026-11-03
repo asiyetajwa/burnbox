@@ -1,0 +1,42 @@
+/* Burn Box brand tokens. The box is calm; only what goes inside it is loud. */
+:root {
+  /* Ground: the studio seamless. Cool lab fog, never pure white. */
+  --bb-fog: #e5e6e8;
+  --bb-fog-deep: #d6d8db;
+  --bb-paper: #f4f5f6;
+  --bb-graphite: #17191c;
+  --bb-graphite-2: #23262a;
+
+  /* Containment set: the box. Soft pastels, glass and chrome. */
+  --bb-sage: #9bb0a6;
+  --bb-sage-deep: #4f7a6d;
+  --bb-mint-glass: #c4d8d2;
+  --bb-blush: #f2bfd2;
+  --bb-butter: #f2c75c;
+  --bb-clay: #cfab95;
+  --bb-chrome-hi: #f6f7f8;
+  --bb-chrome-lo: #8d939a;
+
+  /* Blast set: what the sample tries. Used in small doses, like stickers. */
+  --bb-signal: #e92b0c;
+  --bb-burn: #ff7a2f;
+  --bb-hot-pink: #e8336f;
+  --bb-uv: #6f3fa0;
+  --bb-sticker-lime: #8be03a;
+  --bb-sky: #3f8fd2;
+
+  /* Verdicts. */
+  --bb-safe: var(--bb-sage-deep);
+  --bb-suspicious: var(--bb-butter);
+  --bb-malicious: var(--bb-signal);
+
+  /* Type. */
+  --bb-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --bb-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bb-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Shape: compartments have soft machined corners, stickers are fully round or pill. */
+  --bb-r-compartment: 10px;
+  --bb-r-panel: 16px;
+  --bb-r-pill: 999px;
+}
