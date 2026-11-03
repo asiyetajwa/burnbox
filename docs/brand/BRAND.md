@@ -1,6 +1,6 @@
 # Burn Box brand, the short version
 
-**Name:** Burn Box. Two words, both capitalised. The repo slug `burn-box` is the only exception.
+**Name:** Burn Box. Two words, both capitalised. The repo slug `burnbox` is the only exception.
 
 **Idea:** a calm box, loud gear. The box is a quiet, machined stack of pastel compartments on studio grey. The gear is colour-blocked, stickered safety equipment. The product looks calm; colour is saved for what the sample tried to do.
 
