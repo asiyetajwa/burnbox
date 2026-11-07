@@ -18,6 +18,7 @@ services:
       DOCKER_HOST: tcp://docker-proxy:2375
       VULTR_INFERENCE_API_KEY: ${VULTR_INFERENCE_API_KEY:-}
       VULTR_MODEL: ${VULTR_MODEL:-}
+      VULTR_INFERENCE_BASE_URL: ${VULTR_INFERENCE_BASE_URL:-https://api.vultrinference.com/v1}
       STUB_LLM: ${STUB_LLM:-0}
       BOX_IMAGE: burnbox-box:latest
       BROWSER_IMAGE: burnbox-browser:latest
