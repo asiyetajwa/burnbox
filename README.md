@@ -117,3 +117,16 @@ Dark machined hardware: graphite device shells, inset wells, one warm amber fill
 ## License
 
 MIT
+
+## Run it on Vultr
+
+Burn Box was built for Vultr, and it runs on Vultr's stack by configuration, not by porting.
+
+1. Create any Ubuntu 24.04 VM (2 vCPU / 4 GB is the spec we run).
+2. Run `deploy/setup-vultr.sh` from this repo.
+3. Put a Vultr Serverless Inference key in `/opt/burnbox/.env` (leave `VULTR_INFERENCE_BASE_URL` unset; it defaults to https://api.vultrinference.com/v1) and run `docker compose up -d`.
+4. Check `/api/health`: verdicts now come from Vultr Serverless Inference.
+
+## Infrastructure note (hackathon demo)
+
+The public demo linked from our LabLab submission runs on a Google Cloud VM, with verdicts written by Google Gemini through the same base URL setting, because our Vultr account could not be used. Vultr issued every participant $200 in credits at kickoff, and we redeemed the code into this account on November 3. The account has never been usable: it requires a linked payment method before it will create a VM or issue an API key, and its system rejected our cards in its own words: "This card is not eligible for free credit promotions" and "Linking denied for this card. Please deposit an amount of $5 or greater." The deposits it demanded then failed with an insufficient funds error that was not true. Support ticket YIA-00XAE, opened November 4 and followed up on November 6, asked for manual verification and is unanswered. Our rule for this vendor is no card, no PayPal, no money, so we deployed the identical stack where we hold credits. Same code, same boxes, same receipts. Moving the demo to Vultr is the four steps above and one settings change.
