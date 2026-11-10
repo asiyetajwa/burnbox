@@ -69,7 +69,7 @@ body { margin: 0; font: 400 15px/1.4 Geist, system-ui, sans-serif; color: #1d1f2
   <section class="read"><div><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#8a9099" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>No email open</div></section>
 </div>
 <div class="menu" id="menu">
-  <div>Open</div><div>Reply</div><div>Forward</div><div id="fwd-att">Forward as Attachment</div><hr><div>Mark as Junk</div><div>Delete</div>
+  <div>Open</div><div>Reply</div><div>Forward</div><div id="fwd-att">Forward as Attachment</div><div id="save-file">Save as File</div><hr><div>Mark as Junk</div><div>Delete</div>
 </div>
 <div class="compose" id="compose">
   <div class="bar">Forward as Attachment</div>
@@ -85,7 +85,11 @@ body { margin: 0; font: 400 15px/1.4 Geist, system-ui, sans-serif; color: #1d1f2
 window.stage = {
   select() { document.getElementById('phish').classList.add('sel'); },
   menu(x, y) { const m = document.getElementById('menu'); m.style.left = `${x}px`; m.style.top = `${y}px`; m.classList.add('on'); },
-  hover() { document.getElementById('fwd-att').classList.add('hl'); },
+  hover(sel = '#fwd-att') { document.querySelector(sel).classList.add('hl'); },
+  saved() {
+    document.getElementById('menu').classList.remove('on');
+    const t = document.getElementById('toast'); t.textContent = 'Saved "URGENT_ Invoice 88213.eml" to Downloads, unopened'; t.classList.add('on');
+  },
   compose() { document.getElementById('menu').classList.remove('on'); document.getElementById('compose').classList.add('on'); },
   async type(text) { const to = document.getElementById('to'); for (const ch of text) { to.textContent += ch; await new Promise((r) => setTimeout(r, 70)); } },
   send() { document.getElementById('send').classList.add('press'); setTimeout(() => { document.getElementById('compose').classList.remove('on'); document.getElementById('toast').classList.add('on'); document.getElementById('phish').classList.add('sent'); }, 250); },

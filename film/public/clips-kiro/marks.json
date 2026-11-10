@@ -1,0 +1,31 @@
+{
+  "save": {
+    "row": 2.52,
+    "menu": 3.13,
+    "saved": 5.11,
+    "seconds": 6.08
+  },
+  "team": {
+    "code": 6.29,
+    "on": 9.96,
+    "seconds": 10.77
+  },
+  "attachment": {
+    "detonate": 3.07,
+    "canary": 6.54,
+    "burned": 10.87,
+    "verdict": 12.18,
+    "seconds": 12.43
+  },
+  "teamlist": {
+    "list": 1.37,
+    "filter": 2.88,
+    "seconds": 3.37
+  },
+  "verify": {
+    "real": 3.24,
+    "forged-in": 8.63,
+    "forged": 11.83,
+    "seconds": 12.92
+  }
+}

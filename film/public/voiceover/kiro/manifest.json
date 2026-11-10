@@ -1,0 +1,73 @@
+{
+  "voiceId": "nPczCjzI2devNBz1zQrb",
+  "modelId": "eleven_multilingual_v2",
+  "music": "music/burnbox-bed.mp3",
+  "musicStart": 0,
+  "clips": [
+    {
+      "id": "hook",
+      "file": "voiceover/kiro/hook.mp3",
+      "seconds": 8.829388
+    },
+    {
+      "id": "title",
+      "file": "voiceover/kiro/title.mp3",
+      "seconds": 8.515918
+    },
+    {
+      "id": "save",
+      "file": "voiceover/kiro/save.mp3",
+      "seconds": 5.12
+    },
+    {
+      "id": "envelope",
+      "file": "voiceover/kiro/envelope.mp3",
+      "seconds": 11.232653
+    },
+    {
+      "id": "split",
+      "file": "voiceover/kiro/split.mp3",
+      "seconds": 7.88898
+    },
+    {
+      "id": "attachment",
+      "file": "voiceover/kiro/attachment.mp3",
+      "seconds": 16.352653
+    },
+    {
+      "id": "link",
+      "file": "voiceover/kiro/link.mp3",
+      "seconds": 8.515918
+    },
+    {
+      "id": "verdict",
+      "file": "voiceover/kiro/verdict.mp3",
+      "seconds": 12.747755
+    },
+    {
+      "id": "quick",
+      "file": "voiceover/kiro/quick.mp3",
+      "seconds": 7.079184
+    },
+    {
+      "id": "team",
+      "file": "voiceover/kiro/team.mp3",
+      "seconds": 8.385306
+    },
+    {
+      "id": "verify",
+      "file": "voiceover/kiro/verify.mp3",
+      "seconds": 5.01551
+    },
+    {
+      "id": "kiro",
+      "file": "voiceover/kiro/kiro.mp3",
+      "seconds": 16.274286
+    },
+    {
+      "id": "outro",
+      "file": "voiceover/kiro/outro.mp3",
+      "seconds": 3.578776
+    }
+  ]
+}

@@ -30,7 +30,7 @@ const Footage: React.FC<{ clip: Clip; from: number; keys: { f: number; px: numbe
 };
 
 /** The step label in the lower left: a raised pill with a glowing amber dot, then the line. */
-const Caption: React.FC<{ step: string; text: string; at?: number }> = ({ step, text, at = 8 }) => {
+export const Caption: React.FC<{ step: string; text: string; at?: number }> = ({ step, text, at = 8 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = popAt(frame, fps, at, 18);
@@ -46,12 +46,12 @@ const Caption: React.FC<{ step: string; text: string; at?: number }> = ({ step, 
 };
 
 /** Darkens the footage edges so the caption always reads. */
-const Vignette: React.FC = () => (
+export const Vignette: React.FC = () => (
   <AbsoluteFill style={{ background: 'radial-gradient(ellipse 75% 70% at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%)', pointerEvents: 'none' }} />
 );
 
 /** The Burn Box dial, as in the app: knurled ring that turns, outer ticks that light, a core that glows. */
-const Dial: React.FC<{ size: number; lit: number; turn: number; core?: string; glow?: number }> = ({ size, lit, turn, core, glow = 0 }) => {
+export const Dial: React.FC<{ size: number; lit: number; turn: number; core?: string; glow?: number }> = ({ size, lit, turn, core, glow = 0 }) => {
   const TICKS = 72;
   return (
     <svg width={size} height={size} viewBox="-160 -160 320 320" style={{ overflow: 'visible' }}>
@@ -82,7 +82,7 @@ const Dial: React.FC<{ size: number; lit: number; turn: number; core?: string; g
   );
 };
 
-const Center: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
+export const Center: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
   <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: theme.font, color: theme.fg, ...style }}>{children}</AbsoluteFill>
 );
 
