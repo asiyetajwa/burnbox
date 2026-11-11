@@ -98,7 +98,8 @@ export const QuickScene: React.FC<{ duration: number }> = ({ duration }) => {
         <Footage clip="quick" from={go} keys={[{ f: 0, px: 760, py: 380, z: 1.3 }, { f: cut, px: 760, py: 400, z: 1.3 }]} />
       </Sequence>
       <Sequence from={cut}>
-        <Footage clip="quick" from={go + tail / FPS + cut / FPS - 0.3} keys={[{ f: 0, px: 760, py: 420, z: 1.25 }, { f: Math.max(30, duration - cut - 10), px: 760, py: 560, z: 1.25 }]} />
+        {/* Framed on the headline and summary: the live card's reason rows wrapped badly until burnbox-kiro d652f1c. */}
+        <Footage clip="quick" from={go + tail / FPS + cut / FPS - 0.3} keys={[{ f: 0, px: 900, py: 512, z: 1.06 }, { f: Math.max(30, duration - cut - 10), px: 860, py: 505, z: 1.08 }]} />
       </Sequence>
       <Vignette />
       <Caption step="07" text="Quick check: one link, one answer" />

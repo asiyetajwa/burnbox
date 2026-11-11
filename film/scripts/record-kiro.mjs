@@ -244,7 +244,7 @@ if (ONLY.has('quick')) {
     mark('go');
     await run('#q-card:not([hidden])');
     mark('answer');
-    await page.evaluate(() => document.querySelector('#q-card').scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    await page.evaluate(() => document.querySelector('#q-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
     await wait(4500);
   });
 }
