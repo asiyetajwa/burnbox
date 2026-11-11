@@ -86,10 +86,25 @@ export const VerdictScene = shot('email', () => mk('email', 'verdict') - 0.5, (d
   { f: Math.max(60, d - 12), px: 1150, py: 420, z: 1.5 },
 ], '06', 'Verdict by Gemini, signed receipt');
 
-export const QuickScene = shot('quick', () => mk('quick', 'go') - 2.2, (d) => [
-  { f: 0, px: 760, py: 380, z: 1.3 },
-  { f: Math.max(40, d - 20), px: 760, py: 600, z: 1.25 },
-], '07', 'Quick check: one link, one answer');
+// The check itself takes about ten seconds; the shot starts on the pasted link and lands on the answer.
+export const QuickScene: React.FC<{ duration: number }> = ({ duration }) => {
+  const go = Math.max(0, mk('quick', 'go') - 1.6);
+  const answer = Math.round((mk('quick', 'answer') - go) * FPS);
+  const cut = Math.round(1.8 * FPS);
+  const tail = Math.max(answer - cut, 0); // the wait is cut out: the answer arrives 1.8 s after the click
+  return (
+    <AbsoluteFill>
+      <Sequence durationInFrames={cut}>
+        <Footage clip="quick" from={go} keys={[{ f: 0, px: 760, py: 380, z: 1.3 }, { f: cut, px: 760, py: 400, z: 1.3 }]} />
+      </Sequence>
+      <Sequence from={cut}>
+        <Footage clip="quick" from={go + tail / FPS + cut / FPS - 0.3} keys={[{ f: 0, px: 760, py: 420, z: 1.25 }, { f: Math.max(30, duration - cut - 10), px: 760, py: 560, z: 1.25 }]} />
+      </Sequence>
+      <Vignette />
+      <Caption step="07" text="Quick check: one link, one answer" />
+    </AbsoluteFill>
+  );
+};
 
 // The team code is a live credential for the demo team, so it is blurred.
 const TEAM_CODE: Rect = { x: 190, y: 350, w: 520, h: 90 };

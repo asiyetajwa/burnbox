@@ -27,5 +27,26 @@
     "forged-in": 8.63,
     "forged": 11.83,
     "seconds": 12.92
+  },
+  "email": {
+    "dropped": 2.2,
+    "open": 4.2,
+    "flags": 7.15,
+    "split": 11.5,
+    "verdict": 28.47,
+    "scroll": 31.98,
+    "seconds": 32.8
+  },
+  "link": {
+    "detonate": 3.05,
+    "page": 8.94,
+    "burned": 11.77,
+    "verdict": 19.17,
+    "seconds": 19.6
+  },
+  "quick": {
+    "go": 4.58,
+    "answer": 14.97,
+    "seconds": 16.08
   }
 }
