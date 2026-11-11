@@ -1,4 +1,4 @@
-// Records the Kiroween cut of the Burn Box film against the live demo host (Google Cloud, gVisor boxes, Gemini
+// Records the Kiroween cut of the Burn Box film against the live demo host (Google Cloud, gVisor boxes, model
 // verdicts): no local stack and no mock data. Scenes are recorded one group at a time, because some need the host to
 // be redeployed first. Each scene is Chrome's screencast, encoded to public/clips-kiro/<scene>.mp4 at 60 fps, with
 // the moments worth cutting to in public/clips-kiro/marks.json (merged, so groups can be recorded on different days).
@@ -37,6 +37,34 @@ await ctx.addInitScript(() => {
     requestAnimationFrame(() => { d.style.transform = 'scale(1.7)'; d.style.opacity = '0'; });
     setTimeout(() => d.remove(), 500);
   }, true);
+});
+// The film never names the inference model (Brian's ruling, 2026-11-11). The live app prints it on receipts and
+// verdict cards, so every text node that names it is blurred on screen, like the team code: redacted, not rewritten.
+await ctx.addInitScript(() => {
+  const NAME = /gemini[\w.\-() ]*/i;
+  const hide = (root) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const hits = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (NAME.test(n.nodeValue ?? '') && !n.parentElement?.closest('[data-redact], textarea, script, style')) hits.push(n);
+    }
+    for (const n of hits) {
+      const m = NAME.exec(n.nodeValue ?? '');
+      if (!m) continue;
+      const tail = n.splitText(m.index);
+      tail.splitText(m[0].length);
+      const span = document.createElement('span');
+      span.dataset.redact = '';
+      span.style.cssText = 'filter:blur(7px);display:inline-block';
+      tail.replaceWith(span);
+      span.appendChild(tail);
+    }
+  };
+  const start = () => {
+    hide(document.body);
+    new MutationObserver(() => hide(document.body)).observe(document.body, { subtree: true, childList: true, characterData: true });
+  };
+  if (document.body) start(); else addEventListener('DOMContentLoaded', start);
 });
 const page = await ctx.newPage();
 const errors = [];
@@ -252,8 +280,13 @@ if (ONLY.has('quick')) {
 // Receipt verification: a real receipt checks out, and the same receipt with one word changed does not.
 if (ONLY.has('verify')) {
   const runs = await (await fetch(`${APP}api/runs`)).json();
-  const target = runs.find((r) => r.kind === 'email' && r.verdict === 'malicious') ?? runs[0];
-  const receipt = await (await fetch(`${APP}api/runs/${target.id}/receipt`)).text();
+  // The newest malicious email run whose boxes were all caught (older receipts carry the pre-fix "safe" link box).
+  let target, receipt;
+  for (const r of runs.filter((x) => x.kind === 'email' && x.verdict === 'malicious')) {
+    const text = await (await fetch(`${APP}api/runs/${r.id}/receipt`)).text();
+    if (!text.includes('"verdict": "safe"')) { target = r; receipt = text; break; }
+  }
+  if (!target) throw new Error('No fully caught email receipt to verify');
   const forged = receipt.replace('"verdict": "malicious"', '"verdict": "safe"');
   await page.goto(`${APP}#verify`);
   await page.reload();
@@ -261,8 +294,11 @@ if (ONLY.has('verify')) {
   await wait(1500);
   await scene('verify', async (mark) => {
     await page.mouse.move(mouse.x, mouse.y);
+    // A pasted receipt leaves the box scrolled to its end, where the model's name sits; show its top instead.
+    const top = () => page.evaluate(() => { document.querySelector('#vf-text').scrollTop = 0; });
     await clickOn('#vf-text');
     await page.fill('#vf-text', receipt);
+    await top();
     await wait(700);
     await clickOn('#vf-go');
     await run('#vf-card:not([hidden])');
@@ -274,6 +310,7 @@ if (ONLY.has('verify')) {
     await wait(700);
     await clickOn('#vf-text');
     await page.fill('#vf-text', forged);
+    await top();
     mark('forged-in');
     await wait(900);
     await clickOn('#vf-go');

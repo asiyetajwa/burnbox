@@ -7,62 +7,62 @@
     {
       "id": "hook",
       "file": "voiceover/kiro/hook.mp3",
-      "seconds": 8.829388
+      "seconds": 7.836735
     },
     {
       "id": "title",
       "file": "voiceover/kiro/title.mp3",
-      "seconds": 8.515918
+      "seconds": 8.75102
     },
     {
       "id": "save",
       "file": "voiceover/kiro/save.mp3",
-      "seconds": 5.12
+      "seconds": 5.172245
     },
     {
       "id": "envelope",
       "file": "voiceover/kiro/envelope.mp3",
-      "seconds": 11.232653
+      "seconds": 10.501224
     },
     {
       "id": "split",
       "file": "voiceover/kiro/split.mp3",
-      "seconds": 7.88898
+      "seconds": 7.418776
     },
     {
       "id": "attachment",
       "file": "voiceover/kiro/attachment.mp3",
-      "seconds": 16.352653
+      "seconds": 15.595102
     },
     {
       "id": "link",
       "file": "voiceover/kiro/link.mp3",
-      "seconds": 8.515918
+      "seconds": 7.340408
     },
     {
       "id": "verdict",
       "file": "voiceover/kiro/verdict.mp3",
-      "seconds": 12.747755
+      "seconds": 9.482449
     },
     {
       "id": "quick",
       "file": "voiceover/kiro/quick.mp3",
-      "seconds": 7.079184
+      "seconds": 5.773061
     },
     {
       "id": "team",
       "file": "voiceover/kiro/team.mp3",
-      "seconds": 8.385306
+      "seconds": 7.941224
     },
     {
       "id": "verify",
       "file": "voiceover/kiro/verify.mp3",
-      "seconds": 5.01551
+      "seconds": 6.844082
     },
     {
       "id": "kiro",
       "file": "voiceover/kiro/kiro.mp3",
-      "seconds": 16.274286
+      "seconds": 15.830204
     },
     {
       "id": "outro",

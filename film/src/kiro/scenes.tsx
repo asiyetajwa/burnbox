@@ -84,7 +84,7 @@ export const VerdictScene = shot('email', () => mk('email', 'verdict') - 0.5, (d
   { f: 40, px: 560, py: 430, z: 1.4 },
   { f: Math.round(d * 0.55), px: 560, py: 430, z: 1.4 },
   { f: Math.max(60, d - 12), px: 1150, py: 420, z: 1.5 },
-], '06', 'Verdict by Gemini, signed receipt');
+], '06', 'Verdict by the model, signed receipt');
 
 // The check itself takes about ten seconds; the shot starts on the pasted link and lands on the answer.
 export const QuickScene: React.FC<{ duration: number }> = ({ duration }) => {
@@ -98,8 +98,10 @@ export const QuickScene: React.FC<{ duration: number }> = ({ duration }) => {
         <Footage clip="quick" from={go} keys={[{ f: 0, px: 760, py: 380, z: 1.3 }, { f: cut, px: 760, py: 400, z: 1.3 }]} />
       </Sequence>
       <Sequence from={cut}>
-        {/* Framed on the headline and summary: the live card's reason rows wrapped badly until burnbox-kiro d652f1c. */}
-        <Footage clip="quick" from={go + tail / FPS + cut / FPS - 0.3} keys={[{ f: 0, px: 900, py: 512, z: 1.06 }, { f: Math.max(30, duration - cut - 10), px: 860, py: 505, z: 1.08 }]} />
+        {/* Framed tight on the verdict headline: until burnbox-kiro d652f1c is on the host, the live card's severity bar and
+            reason rows below it ignore the verdict level. The shot starts once the card has scrolled into place. */}
+        <Footage clip="quick" from={Math.max(go + tail / FPS + cut / FPS, mk('quick', 'seconds') - 0.25)} keys={[{ f: 0, px: 650, py: 380, z: 1.44 }, { f: Math.max(30, duration - cut - 10), px: 645, py: 390, z: 1.46 }]} />
+        <AbsoluteFill style={{ background: 'linear-gradient(to bottom, rgba(10,10,11,0) 80%, rgba(10,10,11,1) 92%)' }} />
       </Sequence>
       <Vignette />
       <Caption step="07" text="Quick check: one link, one answer" />
@@ -134,7 +136,7 @@ export const VerifyScene = shot('verify', () => 0.4, (d) => [
 
 // How it was built: the real /.kiro tree, file by file.
 const SPECS: [string, string][] = [
-  ['live-inference', 'Gemini verdicts, labelled on every receipt'],
+  ['live-inference', 'Model verdicts, labelled on every receipt'],
   ['verdict-history-workspace', 'Team history behind unguessable codes'],
   ['link-quick-check', 'One link, one signed answer'],
   ['receipt-verification', 'Public signature check'],
@@ -193,7 +195,7 @@ export const KiroOutroScene: React.FC<{ duration: number }> = () => {
       <div style={{ opacity: p, transform: `scale(${String(0.9 + p * 0.1)})` }}><Dial size={300} lit={1} turn={frame * 0.4} glow={0.9} /></div>
       <div style={{ marginTop: 26, fontSize: 104, fontWeight: 600, letterSpacing: -4.5 }}><BlurText text="Burn Box" at={8} /></div>
       <div style={{ marginTop: 6, fontSize: 46, fontWeight: 400, letterSpacing: -1, color: theme.amberA, textShadow: '0 0 24px rgba(245,154,58,.35)' }}><BlurText text="Don't open it. Let the box open it." at={30} /></div>
-      <div style={{ marginTop: 40, fontFamily: theme.mono, fontSize: 24, color: theme.fg3, opacity: interpolate(frame, [60, 80], [0, 1], clamp) }}>Built with Kiro · Running on Google Cloud · Verdicts by Gemini</div>
+      <div style={{ marginTop: 40, fontFamily: theme.mono, fontSize: 24, color: theme.fg3, opacity: interpolate(frame, [60, 80], [0, 1], clamp) }}>Built with Kiro · Running on Google Cloud</div>
     </Center>
   );
 };

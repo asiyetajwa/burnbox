@@ -6,47 +6,47 @@
     "seconds": 6.08
   },
   "team": {
-    "code": 6.29,
-    "on": 9.96,
-    "seconds": 10.77
+    "code": 6.25,
+    "on": 9.88,
+    "seconds": 10.68
   },
   "attachment": {
-    "detonate": 3.07,
-    "canary": 6.54,
-    "burned": 10.87,
-    "verdict": 12.18,
-    "seconds": 12.43
+    "detonate": 3.08,
+    "canary": 6.02,
+    "burned": 10.85,
+    "verdict": 11.65,
+    "seconds": 12.12
   },
   "teamlist": {
-    "list": 1.37,
-    "filter": 2.88,
-    "seconds": 3.37
+    "list": 1.32,
+    "filter": 2.83,
+    "seconds": 3.28
   },
   "verify": {
-    "real": 3.24,
-    "forged-in": 8.63,
-    "forged": 11.83,
-    "seconds": 12.92
+    "real": 3.15,
+    "forged-in": 8.54,
+    "forged": 11.75,
+    "seconds": 12.83
   },
   "email": {
-    "dropped": 2.2,
-    "open": 4.2,
-    "flags": 7.15,
-    "split": 11.5,
-    "verdict": 28.47,
-    "scroll": 31.98,
-    "seconds": 32.8
+    "dropped": 2.21,
+    "open": 4.17,
+    "flags": 7.19,
+    "split": 11.52,
+    "verdict": 23.42,
+    "scroll": 26.92,
+    "seconds": 27.77
   },
   "link": {
-    "detonate": 3.05,
-    "page": 8.94,
-    "burned": 11.77,
-    "verdict": 19.17,
-    "seconds": 19.6
+    "detonate": 2.91,
+    "page": 8.75,
+    "burned": 11.57,
+    "verdict": 16.39,
+    "seconds": 16.77
   },
   "quick": {
-    "go": 4.57,
-    "answer": 14.97,
-    "seconds": 16.03
+    "go": 4.34,
+    "answer": 23.27,
+    "seconds": 24.32
   }
 }
