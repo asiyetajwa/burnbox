@@ -1,4 +1,4 @@
-// Records the Kiroween cut of the Burn Box film against the live demo host (Google Cloud, gVisor boxes, model
+// Records the Kiroween cut of the Burn Box film against the live demo host (a cloud host, sandboxed boxes, model
 // verdicts): no local stack and no mock data. Scenes are recorded one group at a time, because some need the host to
 // be redeployed first. Each scene is Chrome's screencast, encoded to public/clips-kiro/<scene>.mp4 at 60 fps, with
 // the moments worth cutting to in public/clips-kiro/marks.json (merged, so groups can be recorded on different days).
@@ -16,7 +16,17 @@ const OUT = 'public/clips-kiro';
 const W = 1440, H = 810, SCALE = 4 / 3; // frames come out at 1920 by 1080
 mkdirSync(OUT, { recursive: true });
 
-const browser = await chromium.launch();
+// This sandbox reaches the internet through an HTTP proxy (env vars); Chromium ignores them, so pass the
+// proxy explicitly or every page load is reset by the egress firewall.
+const proxyUrl = process.env.FILM_PROXY ?? process.env.HTTPS_PROXY ?? process.env.http_proxy;
+let proxy;
+if (proxyUrl) {
+  const u = new URL(proxyUrl);
+  proxy = { server: `${u.protocol}//${u.host}` };
+  if (u.username) proxy.username = decodeURIComponent(u.username);
+  if (u.password) proxy.password = decodeURIComponent(u.password);
+}
+const browser = await chromium.launch(proxy ? { proxy } : {});
 const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: SCALE });
 // A visible pointer that follows the mouse, with a ripple on each click, so the viewer can follow the hand.
 await ctx.addInitScript(() => {
@@ -40,8 +50,10 @@ await ctx.addInitScript(() => {
 });
 // The film never names the inference model (Brian's ruling, 2026-11-11). The live app prints it on receipts and
 // verdict cards, so every text node that names it is blurred on screen, like the team code: redacted, not rewritten.
+// Second ruling (same day): the film markets no non-AWS product, so the app's "Google Cloud" header badge is
+// blurred the same way; the film only ever says "the cloud".
 await ctx.addInitScript(() => {
-  const NAME = /gemini[\w.\-() ]*/i;
+  const NAME = /gemini[\w.\-() ]*|google cloud/i;
   const hide = (root) => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const hits = [];
