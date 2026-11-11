@@ -64,7 +64,7 @@ export const EnvelopeScene = shot('email', () => mk('email', 'open') - 0.2, (d) 
 export const SplitScene = shot('email', () => mk('email', 'split') - 0.6, (d) => [
   { f: 0, px: 1060, py: 380, z: 1.6 },
   { f: Math.max(30, d - 10), px: 1050, py: 420, z: 1.75 },
-], '03', 'One fresh gVisor box per part');
+], '03', 'One fresh box per part');
 
 export const AttachmentScene = shot('attachment', () => mk('attachment', 'detonate') - 0.3, (d) => [
   { f: 0, px: 960, py: 560, z: 1.05 },
@@ -140,7 +140,7 @@ const SPECS: [string, string][] = [
   ['verdict-history-workspace', 'Team history behind unguessable codes'],
   ['link-quick-check', 'One link, one signed answer'],
   ['receipt-verification', 'Public signature check'],
-  ['host-deploy', 'Volume-preserving deploy to Google Cloud'],
+  ['host-deploy', 'Volume-preserving deploy to the cloud'],
 ];
 export const KiroScene: React.FC<{ duration: number }> = () => {
   const frame = useCurrentFrame();
@@ -195,7 +195,7 @@ export const KiroOutroScene: React.FC<{ duration: number }> = () => {
       <div style={{ opacity: p, transform: `scale(${String(0.9 + p * 0.1)})` }}><Dial size={300} lit={1} turn={frame * 0.4} glow={0.9} /></div>
       <div style={{ marginTop: 26, fontSize: 104, fontWeight: 600, letterSpacing: -4.5 }}><BlurText text="Burn Box" at={8} /></div>
       <div style={{ marginTop: 6, fontSize: 46, fontWeight: 400, letterSpacing: -1, color: theme.amberA, textShadow: '0 0 24px rgba(245,154,58,.35)' }}><BlurText text="Don't open it. Let the box open it." at={30} /></div>
-      <div style={{ marginTop: 40, fontFamily: theme.mono, fontSize: 24, color: theme.fg3, opacity: interpolate(frame, [60, 80], [0, 1], clamp) }}>Built with Kiro · Running on Google Cloud</div>
+      <div style={{ marginTop: 40, fontFamily: theme.mono, fontSize: 24, color: theme.fg3, opacity: interpolate(frame, [60, 80], [0, 1], clamp) }}>Built with Kiro</div>
     </Center>
   );
 };
