@@ -16,9 +16,10 @@ const OUT = 'public/clips-kiro';
 const W = 1440, H = 810, SCALE = 4 / 3; // frames come out at 1920 by 1080
 mkdirSync(OUT, { recursive: true });
 
-// This sandbox reaches the internet through an HTTP proxy (env vars); Chromium ignores them, so pass the
-// proxy explicitly or every page load is reset by the egress firewall.
-const proxyUrl = process.env.FILM_PROXY ?? process.env.HTTPS_PROXY ?? process.env.http_proxy;
+// Opt-in proxy for sandboxes whose Chromium cannot reach the host directly: set FILM_PROXY to a proxy
+// server URL (a local no-auth relay works) and the recorder routes through it. Unset means a direct
+// connection, exactly as before.
+const proxyUrl = process.env.FILM_PROXY;
 let proxy;
 if (proxyUrl) {
   const u = new URL(proxyUrl);
