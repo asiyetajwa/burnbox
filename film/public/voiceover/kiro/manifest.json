@@ -27,7 +27,7 @@
     {
       "id": "split",
       "file": "voiceover/kiro/split.mp3",
-      "seconds": 7.418776
+      "seconds": 5.155578
     },
     {
       "id": "attachment",
@@ -67,7 +67,7 @@
     {
       "id": "outro",
       "file": "voiceover/kiro/outro.mp3",
-      "seconds": 3.578776
+      "seconds": 3.694649
     }
   ]
 }
